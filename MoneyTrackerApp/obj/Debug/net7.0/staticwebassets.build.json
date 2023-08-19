@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "sNJH3xUvsYmtFA1fxavAAfLdrMigGMOHHWy99d1OoSg=",
+  "Source": "MoneyTrackerApp",
+  "BasePath": "_content/MoneyTrackerApp",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
