@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace MoneyTrackerApp.Models;
 
 public class Expense
@@ -8,20 +10,21 @@ public class Expense
 
     public DateTimeOffset CreationDate { get; set; }
 
-    public int UserID { get; set; }
+    public required int UserID { get; set; }
 
-    public int CategoryID { get; set; }
+    public required int CategoryID { get; set; }
 
     // Navigation properties
     public User User { get; set; }
     public Category Category { get; set; }
 
 
-    public Expense(int id,double amount)
+    [SetsRequiredMembers]
+    public Expense(int id, double amount)
     {
-        this.Id=id;
-        this.Amount=amount;
-        this.UserID=User.Id;
-        this.CategoryID=Category.Id;
+        this.Id = id;
+        this.Amount = amount;
+        this.UserID = User.Id;
+        this.CategoryID = Category.Id;
     }
 }

@@ -19,25 +19,27 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get()
+    public async Task<ActionResult<User>> Get()
     {
         var allUsers = await _context.Users.ToListAsync();
         return Ok(allUsers);
     }
 
     [HttpGet("{id}")]
-    public async Task<User> Get(int id)
+    public async Task<ActionResult<User>> Get(int id)
     {
         var user = await _context.FindAsync<User>(id);
-        Console.Write("here");
+        if (user == null)
+            return NotFound();
         return user;
     }
 
     [HttpPost(Name = "PostNewUser")]
-    public async Task<User> Post(User newuser)
+    public async Task<ActionResult<User>> Post(User newuser)
     {
-        var user=new User(newuser.Id,newuser.Username,newuser.Password,newuser.Email,newuser.Balance );
+        var user = new User(newuser.Id, newuser.Username, newuser.Password, newuser.Email, newuser.Balance);
         await _context.Users.AddAsync(user);
+        await _context.SaveChangesAsync();
         return await Get(user.Id);
     }
 
