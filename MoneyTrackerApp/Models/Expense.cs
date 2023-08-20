@@ -6,7 +6,7 @@ public class Expense
 
     public double Amount { get; set; }
 
-    public DateTime CreationDate { get; set; }
+    public DateTimeOffset CreationDate { get; set; }
 
     public int UserID { get; set; }
 

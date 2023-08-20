@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "5eC7tF/6gMxwnsHTWzd2nFw/+d+Q2GXgoCtTC/faktyv/oZ05Fu3SUV+6Tdv7g1v4AqPwFLhnj0EqWxSDTYx1w==",
+  "dgSpecHash": "Bs9FmJdIBTzI3qOLjdmO4w/nyjcxJ189FITS3vqcVwpFhTa2neLsg5hjmxH9zLI7lQIf/HyLRQ+s8VaqoTYaMQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\malak.yasser\\Desktop\\Talabat_Tasks\\Money Tracker API\\NewCode\\MoneyTrackerApp\\MoneyTrackerApp.csproj",
+  "projectFilePath": "C:\\Users\\malak.yasser\\Desktop\\NewcodeFinal\\money-tracker-app\\MoneyTrackerApp\\MoneyTrackerApp.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\malak.yasser\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\malak.yasser\\.nuget\\packages\\microsoft.aspnetcore.openapi\\7.0.9\\microsoft.aspnetcore.openapi.7.0.9.nupkg.sha512",

@@ -11,12 +11,12 @@ services:
       - "app_db"
     container_name: moneytrackerapp-services
     ports:
-      - "8088-80"
+      - "8088:8080"
     build:
       context: .
       dockerfile: dockerfile
     environment:
-      - ConnectionStrings__DefaultConnection=User ID=postgres;Password=postgres;Server=app_db;Ports=5432;Database=DbExpenses;IntegratedSecurity=true;Pooling=true;
+      - ConnectionStrings__DefaultConnection=User ID=postgres;Password=postgres;Server=app_db;Port=5432;Database=DbExpenses;IntegratedSecurity=true;Pooling=true;
       - ASPNETCORE_URLS=http://+:80
     networks:
       - dev
@@ -29,7 +29,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=DbExpenses
     ports:
-      - "5433:5432"
+      - "5432:5432"
     restart: always
     volumes:
       - app_data:/var/lib/postgresql/data

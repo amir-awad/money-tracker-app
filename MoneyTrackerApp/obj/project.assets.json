@@ -1489,11 +1489,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\malak.yasser\\Desktop\\Talabat_Tasks\\Money Tracker API\\NewCode\\MoneyTrackerApp\\MoneyTrackerApp.csproj",
+      "projectUniqueName": "c:\\Users\\malak.yasser\\Desktop\\NewcodeFinal\\money-tracker-app\\MoneyTrackerApp\\MoneyTrackerApp.csproj",
       "projectName": "MoneyTrackerApp",
-      "projectPath": "C:\\Users\\malak.yasser\\Desktop\\Talabat_Tasks\\Money Tracker API\\NewCode\\MoneyTrackerApp\\MoneyTrackerApp.csproj",
+      "projectPath": "c:\\Users\\malak.yasser\\Desktop\\NewcodeFinal\\money-tracker-app\\MoneyTrackerApp\\MoneyTrackerApp.csproj",
       "packagesPath": "C:\\Users\\malak.yasser\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\malak.yasser\\Desktop\\Talabat_Tasks\\Money Tracker API\\NewCode\\MoneyTrackerApp\\obj\\",
+      "outputPath": "c:\\Users\\malak.yasser\\Desktop\\NewcodeFinal\\money-tracker-app\\MoneyTrackerApp\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\malak.yasser\\AppData\\Roaming\\NuGet\\NuGet.Config",

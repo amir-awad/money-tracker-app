@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MoneyTrackerApp.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20230819181520_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20230820112342_Newmigration")]
+    partial class Newmigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,7 +39,7 @@ namespace MoneyTrackerApp.Migrations
                     b.Property<int>("CategoryID")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreationDate")
+                    b.Property<DateTimeOffset>("CreationDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserID")

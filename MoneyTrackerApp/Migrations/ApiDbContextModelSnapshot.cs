@@ -36,7 +36,7 @@ namespace MoneyTrackerApp.Migrations
                     b.Property<int>("CategoryID")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreationDate")
+                    b.Property<DateTimeOffset>("CreationDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserID")

@@ -20,17 +20,17 @@ public class ExpensesController : ControllerBase
     [HttpGet(Name = "GetAllExpenses")]
     public async Task<IActionResult> Get()
     {
-        var expense = new Expense()
-        {
-            Id = 1,
-            Amount = 300.5,
-            CreationDate = DateTime.Now,
-            UserID = 1,
-            CategoryID = 1
-        };
+        // var expense = new Expense()
+        // {
+        //     Id = 1,
+        //     Amount = 300.5,
+        //     CreationDate = DateTime.UtcNow,
+        //     UserID = 1,
+        //     CategoryID = 1
+        // };
 
-        _context.Add(expense);
-        await _context.SaveChangesAsync();
+        // _context.Add(expense);
+        //await _context.SaveChangesAsync();
         var allDrivers = await _context.Expenses.ToListAsync();
         return Ok(allDrivers);
     }
