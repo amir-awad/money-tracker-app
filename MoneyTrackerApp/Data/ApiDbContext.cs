@@ -11,5 +11,6 @@ public class ApiDbContext : DbContext
     }
 
     public DbSet<Expense> Expenses { get; set; }
-
+    public DbSet<User> Users { get; set; }
+    public DbSet<Category> Categories { get; set; }
 }

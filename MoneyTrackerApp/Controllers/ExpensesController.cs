@@ -7,6 +7,7 @@ namespace MoneyTrackerApp.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+//http://localhost:5200/Expenses
 public class ExpensesController : ControllerBase
 {
     private readonly ILogger<ExpensesController> _logger;
