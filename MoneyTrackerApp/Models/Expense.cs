@@ -15,16 +15,8 @@ public class Expense
     public required int CategoryID { get; set; }
 
     // Navigation properties
-    public User User { get; set; }
-    public Category Category { get; set; }
+    public required User ExpenseUser { get; set; }
+    public required Category ExpenseCategory { get; set; }
 
 
-    [SetsRequiredMembers]
-    public Expense(int id, double amount)
-    {
-        this.Id = id;
-        this.Amount = amount;
-        this.UserID = User.Id;
-        this.CategoryID = Category.Id;
-    }
 }

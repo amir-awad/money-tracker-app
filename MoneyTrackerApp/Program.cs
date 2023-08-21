@@ -29,3 +29,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+/******For migration files******/
+//CMD 1:dotnet ef migrations add "NAME"
+//CMD 2:dotnet ef database update

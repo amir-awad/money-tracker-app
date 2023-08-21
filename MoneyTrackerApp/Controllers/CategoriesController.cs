@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyTrackerApp.Data;
 using MoneyTrackerApp.Models;
+using MoneyTracker.Service.Extensions;
+using MoneyTracker.Service.Dtos;
 
 namespace MoneyTrackerApp.Controllers;
 
@@ -25,13 +27,22 @@ public class CategoriesController : ControllerBase
         return Ok(allCategories);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet]
+    [Route("get-categories/{id}")]
     public async Task<ActionResult<Category>> Get(int id)
     {
         var category = await _context.FindAsync<Category>(id);
         if (category == null)
             return NotFound();
         return category;
+    }
+
+    [HttpGet]
+    [Route("/{id}/Expenses")]
+    public async Task<ActionResult<GetExpenseDto>> GetExpenses(int id)
+    {
+        var expenses = await _context.Expenses.Where(expense => expense.CategoryID == id).Select(expense => expense.AsDto()).ToListAsync();
+        return Ok(expenses);
     }
 
     [HttpPost]

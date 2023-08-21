@@ -17,7 +17,7 @@ services:
       dockerfile: dockerfile
     environment:
       - ConnectionStrings__DefaultConnection=User ID=postgres;Password=postgres;Server=app_db;Port=5432;Database=DbExpenses;IntegratedSecurity=true;Pooling=true;
-      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_URLS=http://localhost:8088
     networks:
       - dev
 

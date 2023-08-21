@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoneyTrackerApp.Data;
 using MoneyTrackerApp.Models;
+using MoneyTracker.Service.Dtos;
+using MoneyTracker.Service.Extensions;
+using System.Globalization;
 
 namespace MoneyTrackerApp.Controllers;
 
@@ -12,6 +15,7 @@ public class ExpensesController : ControllerBase
 {
     private readonly ILogger<ExpensesController> _logger;
     private readonly ApiDbContext _context;
+    // private readonly UsersController usercontroller;
     public ExpensesController(ILogger<ExpensesController> logger, ApiDbContext context)
     {
         _logger = logger;
@@ -19,44 +23,79 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<Expense>> Get()
+    public async Task<ActionResult<GetExpenseDto>> Get()
     {
-        var allexpenses = await _context.Expenses.ToListAsync();
+        var allexpenses = await _context.Expenses.Select(expense => expense.AsDto()).ToListAsync();
         return Ok(allexpenses);
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Expense>> Get(int id)
+    [HttpGet]
+    [Route("get1/{id}")]
+    public async Task<ActionResult<GetExpenseDto>> GetExpense(int id)
     {
         var expense = await _context.FindAsync<Expense>(id);
         if (expense == null)
             return NotFound();
-        return expense;
+        return expense.AsDto();
     }
 
-    [HttpGet("{userid}")]
-    public async Task<ActionResult<Expense>> GetAllExpensesOfUser(int userid)
-    {
-        var expenses = await _context.Expenses.Where(x => x.UserID == userid).ToListAsync();
-        if (expenses == null)
-            return NotFound();
-        return Ok(expenses);
-    }
-
-    // [HttpPost]
-    // public async Task<ActionResult<Expense>> Post(Expense newExpense)
+    // to-do
+    [HttpGet]
+    [Route("get-expense-by-date/{Date}")]
+    // public async Task<ActionResult<List<GetExpenseDto>>> GetExpenses(string date)
     // {
-    //     var expense = new Expense(newExpense.Id, newExpense.Amount)
-    //     {
-    //         UserID = newExpense.UserID,
-    //         CategoryID = newExpense.CategoryID,
-    //         User=newExpense.User,
-    //         Category=newExpense.Category,
-    //         CreationDate = DateTime.UtcNow
-    //     };
-    //     await _context.AddAsync(expense);
-    //     await _context.SaveChangesAsync();
-    //     return await Get(expense.Id);
+        // string format = "yyyy-MM-dd";
+        // if (DateTimeOffset.TryParseExact(date, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset result))
+        // {
+        //     var allexpenses = await _context.Expenses
+        //         .Where(expense => expense.CreationDate.Date == result.Date)
+        //         .Select(expense => expense.AsDto())
+        //         .ToListAsync();
+
+        //     return Ok(allexpenses);
+        // }
+
+        // // Console.Write((DateTime)date);
+        // Console.Write(date);
+        // Console.Write(result.Date);
+        // return NotFound("Date conversion failed or invalid format.");
     // }
 
+
+    [HttpPost]
+    public async Task<ActionResult<GetExpenseDto>> Post(CreateExpenseDto newExpense)
+    {
+        var expense = new Expense()
+        {
+            Id = newExpense.Id,
+            Amount = newExpense.Amount,
+            CreationDate = DateTime.UtcNow,
+            UserID = newExpense.UserId,
+            CategoryID = newExpense.CategoryId,
+            ExpenseUser = await _context.Users.FindAsync(newExpense.UserId),
+            ExpenseCategory = await _context.Categories.FindAsync(newExpense.CategoryId)
+        };
+        await _context.AddAsync(expense);
+        await _context.SaveChangesAsync();
+        return await GetExpense(expense.Id);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<GetExpenseDto>> Put(int id, UpdateExpenseDto updatedexpense)
+    {
+        var expense = await _context.FindAsync<Expense>(id);
+        expense.Amount = updatedexpense.Amount;
+        expense.CategoryID = updatedexpense.CategoryId;
+        _context.Expenses.Update(expense);
+        _context.SaveChanges();
+        return await GetExpense(id);
+    }
+
+    [HttpDelete]
+    public async Task<ActionResult<GetExpenseDto>> Delete(int id)
+    {
+        var expense = await _context.FindAsync<Expense>(id);
+        await _context.Expenses.Where(expense => expense.Id == id).ExecuteDeleteAsync();
+        return expense.AsDto();
+    }
 }
