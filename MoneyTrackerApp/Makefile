@@ -1,5 +1,3 @@
-# Makefile for Running dotnet and Docker Compose Commands with Batch Scripts on Windows
-
 # Run the dotnet application
 build:
 	dotnet build
