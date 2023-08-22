@@ -4,14 +4,14 @@ namespace MoneyTrackerApp.Models;
 
 public class Category
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     public required string Type { get; set; }
 
     [SetsRequiredMembers]
-    public Category(int id,string type)
+    public Category(Guid Id, string type)
     {
-        this.Id=id;
+        this.Id = Id;
         this.Type=type;
     }
 

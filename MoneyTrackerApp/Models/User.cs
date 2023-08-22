@@ -4,7 +4,7 @@ namespace MoneyTrackerApp.Models;
 
 public class User
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     public required string Username { get; set; }
 
@@ -15,9 +15,9 @@ public class User
     public double Balance { get; set; }
 
     [SetsRequiredMembers]
-    public User(int id,string username,string password,string email,double balance)
+    public User(Guid Id, string username,string password,string email,double balance)
     {
-        this.Id=id;
+        this.Id=Id;
         this.Username=username;
         this.Password=password;
         this.Email=email;

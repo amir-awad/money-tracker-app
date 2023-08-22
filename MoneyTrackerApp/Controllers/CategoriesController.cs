@@ -29,7 +29,7 @@ public class CategoriesController : ControllerBase
 
     [HttpGet]
     [Route("get-categories/{id}")]
-    public async Task<ActionResult<Category>> Get(int id)
+    public async Task<ActionResult<Category>> Get(Guid id)
     {
         var category = await _context.FindAsync<Category>(id);
         if (category == null)
@@ -39,7 +39,7 @@ public class CategoriesController : ControllerBase
 
     [HttpGet]
     [Route("/{id}/Expenses")]
-    public async Task<ActionResult<GetExpenseDto>> GetExpenses(int id)
+    public async Task<ActionResult<GetExpenseDto>> GetExpenses(Guid id)
     {
         var expenses = await _context.Expenses.Where(expense => expense.CategoryID == id).Select(expense => expense.AsDto()).ToListAsync();
         return Ok(expenses);
@@ -48,7 +48,7 @@ public class CategoriesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Category>> Post(Category newcategory)
     {
-        var category = new Category(newcategory.Id, newcategory.Type);
+        var category = new Category(Guid.NewGuid(), newcategory.Type);
         await _context.Categories.AddAsync(category);
         await _context.SaveChangesAsync();
         return await Get(category.Id);

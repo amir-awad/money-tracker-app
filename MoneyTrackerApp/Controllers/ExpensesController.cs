@@ -31,7 +31,7 @@ public class ExpensesController : ControllerBase
 
     [HttpGet]
     [Route("get1/{id}")]
-    public async Task<ActionResult<GetExpenseDto>> GetExpense(int id)
+    public async Task<ActionResult<GetExpenseDto>> GetExpense(Guid id)
     {
         var expense = await _context.FindAsync<Expense>(id);
         if (expense == null)
@@ -67,7 +67,7 @@ public class ExpensesController : ControllerBase
     {
         var expense = new Expense()
         {
-            Id = newExpense.Id,
+            Id = Guid.NewGuid(),
             Amount = newExpense.Amount,
             CreationDate = DateTime.UtcNow,
             UserID = newExpense.UserId,
@@ -81,7 +81,7 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<GetExpenseDto>> Put(int id, UpdateExpenseDto updatedexpense)
+    public async Task<ActionResult<GetExpenseDto>> Put(Guid id, UpdateExpenseDto updatedexpense)
     {
         var expense = await _context.FindAsync<Expense>(id);
         expense.Amount = updatedexpense.Amount;
@@ -92,7 +92,7 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpDelete]
-    public async Task<ActionResult<GetExpenseDto>> Delete(int id)
+    public async Task<ActionResult<GetExpenseDto>> Delete(Guid id)
     {
         var expense = await _context.FindAsync<Expense>(id);
         await _context.Expenses.Where(expense => expense.Id == id).ExecuteDeleteAsync();

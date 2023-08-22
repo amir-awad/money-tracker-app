@@ -1,5 +1,5 @@
 # Run the dotnet application
-build:
+dotnet-build:
 	dotnet build
 migrate:
 	dotnet ef migrations add "makemigrations"
@@ -9,7 +9,9 @@ run:
 	dotnet run
 
 # Build Dockerfile and run Docker Compose
-build Dockerfile:
+docker-build:
 	docker build -t money-tracker-app .
 up:
 	docker-compose up
+down:
+	docker-compose down

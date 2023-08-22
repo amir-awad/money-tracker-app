@@ -4,15 +4,15 @@ namespace MoneyTrackerApp.Models;
 
 public class Expense
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     public double Amount { get; set; }
 
     public DateTimeOffset CreationDate { get; set; }
 
-    public required int UserID { get; set; }
+    public required Guid UserID { get; set; }
 
-    public required int CategoryID { get; set; }
+    public required Guid CategoryID { get; set; }
 
     // Navigation properties
     public required User ExpenseUser { get; set; }

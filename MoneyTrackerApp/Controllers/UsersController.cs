@@ -27,37 +27,45 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get1/{id}")]
-    public async Task<ActionResult<User>> Get(int id)
+    [Route("get-user/{id}")]
+    public async Task<ActionResult<User>> Get(Guid id)
     {
         var user = await _context.FindAsync<User>(id);
         if (user == null)
-            return NotFound();
+            return NotFound("User not found!");
         return user;
     }
 
     [HttpGet]
-    [Route("get2/{userid}")]
-    public async Task<ActionResult<Expense>> GetAllExpensesOfUser(int userid)
+    [Route("get-expenses/{userid}")]
+    public async Task<ActionResult<Expense>> GetAllExpensesOfUser(Guid userid)
     {
-        var expenses = await _context.Expenses.Where(x => x.UserID == userid).ToListAsync();
-        if (expenses == null)
-            return NotFound();
+        var user = await _context.Users.FindAsync(userid);
+        if(user == null)
+            return NotFound("User not found!");
+
+        var expenses = await _context.Expenses.Where(expense => expense.UserID == user.Id).ToListAsync();
         return Ok(expenses);
     }
 
     [HttpPost(Name = "PostNewUser")]
-    public async Task<ActionResult<User>> Post(User newuser)
+    public async Task<ActionResult<User>> Post(CreateUserDto newuser)
     {
-        var user = new User(newuser.Id, newuser.Username, newuser.Password, newuser.Email, newuser.Balance);
+        if(newuser.Balance < 0)
+            return BadRequest("Balance cannot be negative!");
+
+        var user = new User(Guid.NewGuid(), newuser.Username, newuser.Password, newuser.Email, newuser.Balance);
         await _context.Users.AddAsync(user);
         await _context.SaveChangesAsync();
+        Console.Write(user.ToString());
         return await Get(user.Id);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<User>> Put(int id, UpdateUserDto updatedUserDto)
+    public async Task<ActionResult<User>> Put(Guid id, UpdateUserDto updatedUserDto)
     {
+        if(updatedUserDto.Balance < 0)
+            return BadRequest("Balance cannot be negative!");
         var user = Get(id).Result.Value as User;
         user.Username=updatedUserDto.Username;
         user.Password=updatedUserDto.Password;
