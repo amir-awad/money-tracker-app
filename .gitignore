@@ -1,0 +1,7 @@
+MoneyTrackerApp/obj/
+MoneyTrackerApp/bin/
+MoneyTrackerApp/Migrations/
+
+
+MoneyTrackerApp.Tests/obj/
+MoneyTrackerApp.Tests/bin/

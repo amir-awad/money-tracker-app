@@ -30,7 +30,7 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get1/{id}")]
+    [Route("get-expense/{id}")]
     public async Task<ActionResult<GetExpenseDto>> GetExpense(Guid id)
     {
         var expense = await _context.FindAsync<Expense>(id);
