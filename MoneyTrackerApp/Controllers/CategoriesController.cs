@@ -34,24 +34,24 @@ public class CategoriesController : ControllerBase
         var category = await _context.FindAsync<Category>(id);
         if (category == null)
             return NotFound();
-        return category;
-    }
-
-    [HttpGet]
-    [Route("/{id}/Expenses")]
-    public async Task<ActionResult<GetExpenseDto>> GetExpenses(Guid id)
-    {
-        var expenses = await _context.Expenses.Where(expense => expense.CategoryID == id).Select(expense => expense.AsDto()).ToListAsync();
-        return Ok(expenses);
+        return Ok(category);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Category>> Post(Category newcategory)
+    public async Task<ActionResult<Category>> Post(CreateCategoryDto newcategory)
     {
         var category = new Category(Guid.NewGuid(), newcategory.Type);
         await _context.Categories.AddAsync(category);
         await _context.SaveChangesAsync();
         return await Get(category.Id);
+    }
+
+    [HttpGet]
+    [Route("{user-id}/{categoty-id}/Expenses")]
+    public async Task<ActionResult<GetExpenseDto>> GetCategoryExpensesOfUser(Guid UserId, Guid CategoryId)
+    {
+        var expenses = await _context.Expenses.Where(expense => expense.CategoryID == CategoryId && expense.UserID == UserId).Select(expense => expense.AsDto()).ToListAsync();
+        return Ok(expenses);
     }
 
 }

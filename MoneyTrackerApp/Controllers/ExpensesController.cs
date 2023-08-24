@@ -23,9 +23,10 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<GetExpenseDto>> Get()
+    [Route("{user-id}")]
+    public async Task<ActionResult<GetExpenseDto>> Get(Guid userId)
     {
-        var allexpenses = await _context.Expenses.Select(expense => expense.AsDto()).ToListAsync();
+        var allexpenses = await _context.Expenses.Where(expense => expense.UserID == userId).Select(expense => expense.AsDto()).ToListAsync();
         return Ok(allexpenses);
     }
 
@@ -36,7 +37,7 @@ public class ExpensesController : ControllerBase
         var expense = await _context.FindAsync<Expense>(id);
         if (expense == null)
             return NotFound();
-        return expense.AsDto();
+        return Ok(expense.AsDto());
     }
 
     // to-do
@@ -95,7 +96,10 @@ public class ExpensesController : ControllerBase
     public async Task<ActionResult<GetExpenseDto>> Delete(Guid id)
     {
         var expense = await _context.FindAsync<Expense>(id);
-        await _context.Expenses.Where(expense => expense.Id == id).ExecuteDeleteAsync();
-        return expense.AsDto();
+        if (expense == null)
+            return NotFound();
+        _context.Remove(expense);
+        _context.SaveChanges();
+        return Ok(expense.AsDto());
     }
 }

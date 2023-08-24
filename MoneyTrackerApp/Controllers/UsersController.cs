@@ -33,7 +33,7 @@ public class UsersController : ControllerBase
         var user = await _context.FindAsync<User>(id);
         if (user == null)
             return NotFound("User not found!");
-        return user;
+        return Ok(user);
     }
 
     [HttpGet]
@@ -41,7 +41,7 @@ public class UsersController : ControllerBase
     public async Task<ActionResult<Expense>> GetAllExpensesOfUser(Guid userid)
     {
         var user = await _context.Users.FindAsync(userid);
-        if(user == null)
+        if (user == null)
             return NotFound("User not found!");
 
         var expenses = await _context.Expenses.Where(expense => expense.UserID == user.Id).ToListAsync();
@@ -51,7 +51,7 @@ public class UsersController : ControllerBase
     [HttpPost(Name = "PostNewUser")]
     public async Task<ActionResult<User>> Post(CreateUserDto newuser)
     {
-        if(newuser.Balance < 0)
+        if (newuser.Balance < 0)
             return BadRequest("Balance cannot be negative!");
 
         var user = new User(Guid.NewGuid(), newuser.Username, newuser.Password, newuser.Email, newuser.Balance);
@@ -64,13 +64,14 @@ public class UsersController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<User>> Put(Guid id, UpdateUserDto updatedUserDto)
     {
-        if(updatedUserDto.Balance < 0)
+        if (updatedUserDto.Balance < 0)
             return BadRequest("Balance cannot be negative!");
-        var user = Get(id).Result.Value as User;
-        user.Username=updatedUserDto.Username;
-        user.Password=updatedUserDto.Password;
-        user.Email=updatedUserDto.Email;
-        user.Balance=updatedUserDto.Balance;
+
+        var user =await _context.FindAsync<User>(id);
+        user.Username = updatedUserDto.Username;
+        user.Password = updatedUserDto.Password;
+        user.Email = updatedUserDto.Email;
+        user.Balance = updatedUserDto.Balance;
 
         _context.Users.Update(user);
         _context.SaveChanges();

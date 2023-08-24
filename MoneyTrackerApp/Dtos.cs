@@ -14,4 +14,7 @@ namespace MoneyTracker.Service.Dtos
 
     public record CreateUserDto(string Username, string Password, string Email, double Balance);
 
+    // Categories
+    public record CreateCategoryDto(string Type);
+
 }
