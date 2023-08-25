@@ -1,9 +1,14 @@
 {
   "ExpandedNodes": [
+<<<<<<< HEAD
     "",
     "\\MoneyTrackerApp",
     "\\MoneyTrackerApp\\Models"
   ],
   "SelectedNode": "\\MoneyTrackerApp\\obj",
+=======
+    ""
+  ],
+>>>>>>> 769ad4805baa80089d234396ca5cf66fdcf99b6c
   "PreviewInSolutionExplorer": false
 }
