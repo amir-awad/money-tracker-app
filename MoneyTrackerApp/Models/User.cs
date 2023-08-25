@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace MoneyTrackerApp.Models;
@@ -10,6 +11,8 @@ public class User
 
     public required string Password { get; set; }
 
+    [DataType(DataType.EmailAddress)]
+    [EmailAddress]
     public required string Email { get; set; }
 
     public double Balance { get; set; }

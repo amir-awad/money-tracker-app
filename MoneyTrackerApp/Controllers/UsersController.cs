@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MoneyTracker.Service.Dtos;
 using MoneyTrackerApp.Data;
 using MoneyTrackerApp.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace MoneyTrackerApp.Controllers;
 
@@ -51,8 +52,14 @@ public class UsersController : ControllerBase
     [HttpPost(Name = "PostNewUser")]
     public async Task<ActionResult<User>> Post(CreateUserDto newuser)
     {
+        // validate the user entered a non-negative balance
         if (newuser.Balance < 0)
             return BadRequest("Balance cannot be negative!");
+
+        // validate the user entered valid email address
+        var emailValidator = new EmailAddressAttribute();
+        if (!emailValidator.IsValid(newuser.Email))
+            return BadRequest("Invalid email address!");
 
         var user = new User(Guid.NewGuid(), newuser.Username, newuser.Password, newuser.Email, newuser.Balance);
         await _context.Users.AddAsync(user);
@@ -64,8 +71,14 @@ public class UsersController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<User>> Put(Guid id, UpdateUserDto updatedUserDto)
     {
+        // validate the user entered a non-negative balance
         if (updatedUserDto.Balance < 0)
             return BadRequest("Balance cannot be negative!");
+
+        // validate the user entered valid email address
+        var emailValidator = new EmailAddressAttribute();
+        if (!emailValidator.IsValid(updatedUserDto.Email))
+            return BadRequest("Invalid email address!");
 
         var user =await _context.FindAsync<User>(id);
         user.Username = updatedUserDto.Username;
