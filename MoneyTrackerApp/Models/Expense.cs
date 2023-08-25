@@ -6,7 +6,7 @@ public class Expense
 {
     public Guid Id { get; set; }
 
-    public double Amount { get; set; }
+    public required double Amount { get; set; }
 
     public DateTimeOffset CreationDate { get; set; }
 
@@ -17,6 +17,4 @@ public class Expense
     // Navigation properties
     public required User ExpenseUser { get; set; }
     public required Category ExpenseCategory { get; set; }
-
-
 }

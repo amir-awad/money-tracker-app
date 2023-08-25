@@ -15,7 +15,7 @@ public class User
     [EmailAddress]
     public required string Email { get; set; }
 
-    public double Balance { get; set; }
+    public required double Balance { get; set; }
 
     [SetsRequiredMembers]
     public User(Guid Id, string username,string password,string email,double balance)

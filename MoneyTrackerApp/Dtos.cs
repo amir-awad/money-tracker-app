@@ -5,7 +5,7 @@ namespace MoneyTracker.Service.Dtos
     //Expenses
     public record GetExpenseDto(Guid Id, double Amount, Guid UserId, Guid CategoryId, DateTimeOffset Creationdate);
 
-    public record CreateExpenseDto(double Amount, Guid UserId, Guid CategoryId);
+    public record CreateExpenseDto(double Amount, Guid UserId, string CategoryType);
 
     public record UpdateExpenseDto(double Amount, Guid CategoryId);
 

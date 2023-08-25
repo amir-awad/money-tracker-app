@@ -23,10 +23,12 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("{user-id}")]
+    [Route("get-expenses-of-user/{UserID}")]
     public async Task<ActionResult<GetExpenseDto>> Get(Guid userId)
     {
         var allexpenses = await _context.Expenses.Where(expense => expense.UserID == userId).Select(expense => expense.AsDto()).ToListAsync();
+        if (allexpenses.Count == 0)
+            return NotFound();
         return Ok(allexpenses);
     }
 
@@ -41,40 +43,63 @@ public class ExpensesController : ControllerBase
     }
 
     // to-do
-    [HttpGet]
-    [Route("get-expense-by-date/{Date}")]
+    // [HttpGet]
+    // [Route("get-expense-by-date/{Date}")]
     // public async Task<ActionResult<List<GetExpenseDto>>> GetExpenses(string date)
     // {
-        // string format = "yyyy-MM-dd";
-        // if (DateTimeOffset.TryParseExact(date, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset result))
-        // {
-        //     var allexpenses = await _context.Expenses
-        //         .Where(expense => expense.CreationDate.Date == result.Date)
-        //         .Select(expense => expense.AsDto())
-        //         .ToListAsync();
+    // string format = "yyyy-MM-dd";
+    // if (DateTimeOffset.TryParseExact(date, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset result))
+    // {
+    //     var allexpenses = await _context.Expenses
+    //         .Where(expense => expense.CreationDate.Date == result.Date)
+    //         .Select(expense => expense.AsDto())
+    //         .ToListAsync();
 
-        //     return Ok(allexpenses);
-        // }
+    //     return Ok(allexpenses);
+    // }
 
-        // // Console.Write((DateTime)date);
-        // Console.Write(date);
-        // Console.Write(result.Date);
-        // return NotFound("Date conversion failed or invalid format.");
+    // // Console.Write((DateTime)date);
+    // Console.Write(date);
+    // Console.Write(result.Date);
+    // return NotFound("Date conversion failed or invalid format.");
     // }
 
 
     [HttpPost]
     public async Task<ActionResult<GetExpenseDto>> Post(CreateExpenseDto newExpense)
     {
+        if (string.IsNullOrWhiteSpace(newExpense.Amount.ToString()))
+            return BadRequest("Expense must have a valid amount");
+        if (newExpense.Amount <= 0)
+            return BadRequest("Expense must have a valid amount");
+        if (string.IsNullOrWhiteSpace(newExpense.UserId.ToString()))
+            return BadRequest("User must have a valid UserID");
+        if (string.IsNullOrWhiteSpace(newExpense.CategoryType.ToString()))
+            return BadRequest("User must have a valid CategoryID");
+
+        var expenseUser = await _context.Users.FindAsync(newExpense.UserId);
+        if (expenseUser == null)
+            return NotFound("User is not found");
+        var expenseCategory = await _context.Categories.Where(category => category.Type == newExpense.CategoryType).FirstOrDefaultAsync();
+        if (expenseCategory == null)
+            return NotFound("Category is not found");
+
+        double newBalance = expenseUser.Balance - newExpense.Amount;
+        if (newBalance < 0)
+            return BadRequest("User doesn't have enough balance for this expense");
+        expenseUser.Balance=newBalance;
+        _context.Users.Update(expenseUser);
+        _context.SaveChanges();
+
         var expense = new Expense()
         {
             Id = Guid.NewGuid(),
             Amount = newExpense.Amount,
             CreationDate = DateTime.UtcNow,
             UserID = newExpense.UserId,
-            CategoryID = newExpense.CategoryId,
-            ExpenseUser = await _context.Users.FindAsync(newExpense.UserId),
-            ExpenseCategory = await _context.Categories.FindAsync(newExpense.CategoryId)
+            CategoryID = expenseCategory.Id,
+            ExpenseUser = expenseUser,
+            ExpenseCategory = expenseCategory
         };
         await _context.AddAsync(expense);
         await _context.SaveChangesAsync();
@@ -85,6 +110,8 @@ public class ExpensesController : ControllerBase
     public async Task<ActionResult<GetExpenseDto>> Put(Guid id, UpdateExpenseDto updatedexpense)
     {
         var expense = await _context.FindAsync<Expense>(id);
+        if (expense == null)
+            return NotFound();
         expense.Amount = updatedexpense.Amount;
         expense.CategoryID = updatedexpense.CategoryId;
         _context.Expenses.Update(expense);

@@ -5,6 +5,8 @@ migrate:
 	dotnet ef migrations add "makemigrations"
 update:
 	dotnet ef database update
+drop:
+	dotnet ef database drop
 run:
 	dotnet run
 
