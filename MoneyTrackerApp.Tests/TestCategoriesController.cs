@@ -27,6 +27,21 @@ namespace MoneyTrackerApp.Tests
                 .Options;
             context = new ApiDbContext(options);
 
+            _controller = new CategoriesController(logger, context);
+        }
+
+        public void RemoveInMemoryDatabase()
+        {
+            context.Users.RemoveRange(context.Users); 
+            context.Expenses.RemoveRange(context.Expenses);
+            context.Categories.RemoveRange(context.Categories);
+        }
+
+        [Test]
+        public async Task GetAllCategories_ReturnsListOfCategories()
+        {
+            //Arrange
+            RemoveInMemoryDatabase();
             Category category1 = new Category(Guid.NewGuid(), "Category1");
             Category category2 = new Category(Guid.NewGuid(), "Category2");
             context.Categories.AddRange(new List<Category>
@@ -34,15 +49,8 @@ namespace MoneyTrackerApp.Tests
                 category1,
                 category2
             });
-            
-
             context.SaveChanges();
-            _controller = new CategoriesController(logger, context);
-        }
 
-        [Test]
-        public async Task GetAllCategories_ReturnsListOfCategories()
-        {
             // Act
             var result = await _controller.Get();
 
@@ -60,6 +68,7 @@ namespace MoneyTrackerApp.Tests
         public async Task GetCategoryById_ReturnsCategory()
         {
             // Arrange
+            RemoveInMemoryDatabase();
             Guid id = Guid.NewGuid();
             context.Categories.AddRange(new List<Category>
             {
@@ -70,7 +79,6 @@ namespace MoneyTrackerApp.Tests
             // Act
             var result = await _controller.Get(id);
 
-
             // Assert
             Assert.IsInstanceOf<ActionResult<Category>>(result); // Check if the result is of type ActionResult<category>
             Assert.IsInstanceOf<OkObjectResult>(result.Result); // Check if the result is of type OkObjectResult
@@ -79,16 +87,16 @@ namespace MoneyTrackerApp.Tests
             var category = okResult.Value as Category;
             Assert.AreEqual(id, category.Id);
             Assert.AreEqual("Category3", category.Type);
-
         }
 
         [Test]
         public async Task PostNewCategory_ReturnsNewCategory()
         {
             // Arrange
+            RemoveInMemoryDatabase();
             var newCategory = new CreateCategoryDto
             (
-                "Category3"
+                "NewCategory3"
             );
 
             // Act
@@ -106,7 +114,8 @@ namespace MoneyTrackerApp.Tests
         [Test]
         public async Task GetUserExpenses_ReturnExpenses()
         {
-            var user = new User(Guid.NewGuid(), "User4", "Password4", "user4@example.com", 400.0);
+            RemoveInMemoryDatabase();
+            var user = new User(Guid.NewGuid(), "User4", "Password4", "user4@gmail.com", 400.0);
             context.Users.AddRange(new List<User>
             {
                 user,
@@ -138,7 +147,7 @@ namespace MoneyTrackerApp.Tests
 
 
             // Act
-            var result = await _controller.GetCategoryExpensesOfUser(user.Id, category.Id);
+            var result = await _controller.GetCategoryExpensesOfUser(user.Id, category.Type);
 
             // Assert
             Assert.IsInstanceOf<ActionResult<GetExpenseDto>>(result); // Check if the result is of type ActionResult<Expense>

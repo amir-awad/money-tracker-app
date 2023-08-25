@@ -30,19 +30,22 @@ namespace MoneyTrackerApp.Tests
             _controller = new UsersController(logger, context);
         }
 
+        public void RemoveInMemoryDatabase()
+        {
+            context.Users.RemoveRange(context.Users);
+            context.Expenses.RemoveRange(context.Expenses);
+            context.Categories.RemoveRange(context.Categories);
+        }
+
         [Test]
         public async Task GetAllUsers_ReturnsListOfUsers()
         {
-            context.Users.RemoveRange(context.Users); // Clear in-memory database
-            
-            // Populate in-memory database with test data
+            RemoveInMemoryDatabase();
             context.Users.AddRange(new List<User>
             {
                 new User(Guid.NewGuid(), "User1", "user1@example.com", "user1_username", 100.0),
                 new User(Guid.NewGuid(), "User2", "user2@example.com", "user2_username", 200.0),
-    // Add more users as needed
             });
-
             context.SaveChanges();
 
             // Act
@@ -61,6 +64,7 @@ namespace MoneyTrackerApp.Tests
         public async Task GetUserById_ReturnsUser()
         {
             // Arrange
+            RemoveInMemoryDatabase();
             Guid id = Guid.NewGuid();
             context.Users.AddRange(new List<User>
             {
@@ -90,11 +94,12 @@ namespace MoneyTrackerApp.Tests
         public async Task PostNewUser_ReturnsNewUser()
         {
             // Arrange
+            RemoveInMemoryDatabase();
             var newUser = new CreateUserDto
             (
                 "User3",
-                "Email2",
                 "Password2",
+                "Email2@gmail.com",
                 300.0
             );
 
@@ -117,6 +122,7 @@ namespace MoneyTrackerApp.Tests
         public async Task PutExistingUser_ReturnsUpdatedUser()
         {
             // Arrange
+            RemoveInMemoryDatabase();
             Guid id = Guid.NewGuid();
             var existinguser = new User(id, "User4", "Password4", "user4@example.com", 400.0);
             context.Users.AddRange(new List<User>
@@ -129,7 +135,7 @@ namespace MoneyTrackerApp.Tests
             (
                 "User4Update",
                 "Password4",
-                "user4@example.com",
+                "user4@gmail.com",
                 400.0
             );
 
@@ -152,6 +158,7 @@ namespace MoneyTrackerApp.Tests
         [Test]
         public async Task GetUserExpenses_ReturnExpenses()
         {
+            RemoveInMemoryDatabase();
             var user = new User(Guid.NewGuid(), "User4", "Password4", "user4@example.com", 400.0);
             context.Users.AddRange(new List<User>
             {
@@ -167,7 +174,7 @@ namespace MoneyTrackerApp.Tests
             var expense = new Expense()
             {
                 Id = Guid.NewGuid(),
-                Amount = 500,
+                Amount = 300,
                 CreationDate = DateTime.UtcNow,
                 UserID = user.Id,
                 CategoryID = category.Id,
