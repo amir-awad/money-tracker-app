@@ -8,11 +8,6 @@ public class Category
 
     public required string Type { get; set; }
 
-    [SetsRequiredMembers]
-    public Category(Guid Id, string type)
-    {
-        this.Id = Id;
-        this.Type=type;
-    }
+    public required Guid UserID { get; set; }
 
 }

@@ -23,12 +23,20 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get-expenses-of-user/{UserID}")]
-    public async Task<ActionResult<GetExpenseDto>> Get(Guid userId)
+    [Route("get-expenses-of-user/")]
+    public async Task<ActionResult<GetExpenseDto>> Get()
     {
+        if(UsersController.LoggedInUser == null)
+            return NotFound("User is not logged in");
+
+        Console.WriteLine("User is logged in");
+        Console.WriteLine(UsersController.LoggedInUser);
+        Guid userId = UsersController.LoggedInUser.Id;
+        Console.Write("User ID: "); 
+        Console.Write(userId);
         var allexpenses = await _context.Expenses.Where(expense => expense.UserID == userId).Select(expense => expense.AsDto()).ToListAsync();
         if (allexpenses.Count == 0)
-            return NotFound();
+            return NotFound("No expenses so far for this user");
         return Ok(allexpenses);
     }
 
@@ -68,18 +76,17 @@ public class ExpensesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<GetExpenseDto>> Post(CreateExpenseDto newExpense)
     {
+        var expenseUser = UsersController.LoggedInUser;
+        if (expenseUser == null)
+            return NotFound("User is not logged in");
+
         if (string.IsNullOrWhiteSpace(newExpense.Amount.ToString()))
             return BadRequest("Expense must have a valid amount");
         if (newExpense.Amount <= 0)
             return BadRequest("Expense must have a valid amount");
-        if (string.IsNullOrWhiteSpace(newExpense.UserId.ToString()))
-            return BadRequest("User must have a valid UserID");
         if (string.IsNullOrWhiteSpace(newExpense.CategoryType.ToString()))
             return BadRequest("User must have a valid CategoryID");
 
-        var expenseUser = await _context.Users.FindAsync(newExpense.UserId);
-        if (expenseUser == null)
-            return NotFound("User is not found");
         var expenseCategory = await _context.Categories.Where(category => category.Type == newExpense.CategoryType).FirstOrDefaultAsync();
         if (expenseCategory == null)
             return NotFound("Category is not found");
@@ -96,7 +103,7 @@ public class ExpensesController : ControllerBase
             Id = Guid.NewGuid(),
             Amount = newExpense.Amount,
             CreationDate = DateTime.UtcNow,
-            UserID = newExpense.UserId,
+            UserID = expenseUser.Id,
             CategoryID = expenseCategory.Id,
             ExpenseUser = expenseUser,
             ExpenseCategory = expenseCategory
@@ -106,7 +113,7 @@ public class ExpensesController : ControllerBase
         return await GetExpense(expense.Id);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{expense-id}")]
     public async Task<ActionResult<GetExpenseDto>> Put(Guid id, UpdateExpenseDto updatedexpense)
     {
         var expense = await _context.FindAsync<Expense>(id);
@@ -119,7 +126,7 @@ public class ExpensesController : ControllerBase
         return await GetExpense(id);
     }
 
-    [HttpDelete]
+    [HttpDelete("expense-id")]
     public async Task<ActionResult<GetExpenseDto>> Delete(Guid id)
     {
         var expense = await _context.FindAsync<Expense>(id);

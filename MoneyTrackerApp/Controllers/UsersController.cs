@@ -20,53 +20,13 @@ public class UsersController : ControllerBase
     private readonly ApiDbContext _context;
     private readonly IConfiguration _configuration;
 
-    public User LoggedInUser;
+    public static User LoggedInUser;
 
     public UsersController(ILogger<UsersController> logger, ApiDbContext context, IConfiguration configuration)
     {
         _logger = logger;
         _context = context;
         _configuration = configuration;
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<User>> Get()
-    {
-        var allUsers = await _context.Users.ToListAsync();
-        return Ok(allUsers);
-    }
-
-    [HttpGet]
-    [Route("get-user/{id}")]
-    public async Task<ActionResult<User>> Get(Guid id)
-    {
-        var user = await _context.FindAsync<User>(id);
-        if (user == null)
-            return NotFound("User not found!");
-        return Ok(user);
-    }
-
-    [HttpGet]
-    [Route("get-expenses/{userid}")]
-    public async Task<ActionResult<Expense>> GetAllExpensesOfUser(Guid userid)
-    {
-        var user = await _context.Users.FindAsync(userid);
-        if (user == null)
-            return NotFound("User not found!");
-        var expenses = await _context.Expenses.Where(expense => expense.UserID == user.Id).ToListAsync();
-        if (expenses == null)
-            return NotFound("User has no expenses!");
-        return Ok(expenses);
-    }
-
-    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-    {
-        using (var hmac = new HMACSHA512()) 
-        {
-            passwordSalt = hmac.Key;
-            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            
-        }
     }
 
     [HttpPost("register")]
@@ -98,6 +58,45 @@ public class UsersController : ControllerBase
         return await Get(user.Id);
     }
 
+    [HttpPost("login")]
+    public async Task<ActionResult<string>> login(LoginUserDto user)
+    {
+        var users = await _context.Users.Where(u => u.Email.Equals(user.Email)).ToListAsync();
+        if (users.Count == 0)
+            return NotFound("User not found!");
+
+        foreach (var u in users)
+        {
+            Console.WriteLine(u.ToString());
+            if (VerifyPasswordHash(user.Password, u.PasswordHash, u.PasswordSalt))
+            {
+                string token = CreateToken(u);
+                LoggedInUser = u;
+                return Ok(token);
+            }
+        }
+
+        return BadRequest("Invalid password!");
+    }
+
+    [HttpPost("logout")]
+    public async Task<ActionResult<string>> logout()
+    {
+        LoggedInUser = null;
+        return Ok("Logged out!");
+    }
+
+    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    {
+        using (var hmac = new HMACSHA512())
+        {
+            passwordSalt = hmac.Key;
+            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+
+        }
+    }
+
+
     private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
     {
         using (var hmac = new HMACSHA512(passwordSalt))
@@ -123,33 +122,44 @@ public class UsersController : ControllerBase
             expires: DateTime.UtcNow.AddDays(1),
             signingCredentials: cred
          );
-        
+
 
         var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
         return jwt;
     }
 
-    [HttpPost("login")]
-    public async Task<ActionResult<string>> login(LoginUserDto user)
-    {
-        var users = await _context.Users.Where(u => u.Email.Equals(user.Email)).ToListAsync();
-        if (users.Count == 0)
-            return NotFound("User not found!");
-        
-        foreach (var u in users)
-        {
-            Console.WriteLine(u.ToString());
-            if(VerifyPasswordHash(user.Password, u.PasswordHash, u.PasswordSalt))
-            {
-                string token = CreateToken(u);
-                LoggedInUser = u;
-                return Ok(token);
-            }
-        }
 
-        return BadRequest("Invalid password!");    
+    [HttpGet]
+    public async Task<ActionResult<User>> Get()
+    {
+        var allUsers = await _context.Users.ToListAsync();
+        return Ok(allUsers);
     }
+
+    [HttpGet]
+    [Route("get-user/{id}")]
+    public async Task<ActionResult<User>> Get(Guid id)
+    {
+        var user = await _context.FindAsync<User>(id);
+        if (user == null)
+            return NotFound("User not found!");
+        return Ok(user);
+    }
+
+    [HttpGet]
+    [Route("get-expenses/{userid}")]
+    public async Task<ActionResult<Expense>> GetAllExpensesOfUser(Guid userid)
+    {
+        var user = await _context.Users.FindAsync(userid);
+        if (user == null)
+            return NotFound("User not found!");
+        var expenses = await _context.Expenses.Where(expense => expense.UserID == user.Id).ToListAsync();
+        if (expenses == null)
+            return NotFound("User has no expenses!");
+        return Ok(expenses);
+    }
+
 
     [HttpPut("{id}")]
     public async Task<ActionResult<User>> Put(Guid id, UpdateUserDto updatedUserDto)

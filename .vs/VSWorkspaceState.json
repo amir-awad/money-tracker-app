@@ -3,8 +3,10 @@
     "",
     "\\MoneyTrackerApp",
     "\\MoneyTrackerApp\\Controllers",
+    "\\MoneyTrackerApp\\Data",
+    "\\MoneyTrackerApp\\Migrations",
     "\\MoneyTrackerApp\\Models"
   ],
-  "SelectedNode": "\\MoneyTrackerApp\\Controllers\\UsersController.cs",
+  "SelectedNode": "\\MoneyTrackerApp\\Models\\Category.cs",
   "PreviewInSolutionExplorer": false
 }
