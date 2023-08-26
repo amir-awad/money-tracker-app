@@ -30,8 +30,9 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<User>> Post(CreateUserDto newUser)
+    public async Task<ActionResult<User>> Register(CreateUserDto newUser)
     {
+
         if(LoggedInUser != null)
             return BadRequest("You are already logged in!");
 
@@ -62,7 +63,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<string>> login(LoginUserDto user)
+    public async Task<ActionResult<string>> Login(LoginUserDto user)
     {
         if (string.IsNullOrWhiteSpace(user.Email))
             return BadRequest("User must have a valid email");
@@ -88,7 +89,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("logout")]
-    public async Task<ActionResult<string>> logout()
+    public async Task<ActionResult<string>> Logout()
     {
         if(LoggedInUser == null)
             return BadRequest("No user logged in!");
@@ -161,7 +162,7 @@ public class UsersController : ControllerBase
 
     [HttpPut]
     [Route("update-my-info/")]
-    public async Task<ActionResult<UpdateUserDto>> Put(UpdateUserDto updatedUserDto)
+    public async Task<ActionResult<UpdateUserDto>> Update(UpdateUserDto updatedUserDto)
     {
         if(LoggedInUser == null)
             return BadRequest("You must be logged in to update your info!");
@@ -197,6 +198,11 @@ public class UsersController : ControllerBase
         _context.Users.Update(user);
         _context.SaveChanges();
         return Ok(updatedUserDto);
+    }
+
+    public void setLoggedInUser(User user)
+    {
+        LoggedInUser = user;
     }
 
 }
