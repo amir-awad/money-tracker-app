@@ -34,19 +34,35 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get-categories/{id}")]
+    [Route("get-categories-by-type/{type}")]
+    public async Task<ActionResult<Category>> Get(string Type)
+    {
+        if (UsersController.LoggedInUser == null)
+            return Unauthorized("You must be logged in to view categories");
+
+        var category = await _context.Categories.Where(category => category.Type == Type && category.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
+        if (category == null)
+            return NotFound("Category not found");
+        
+        return Ok(category.AsDto());
+    }
+
+    [HttpGet]
+    [Route("get-categories-by-id/{id}")]
     public async Task<ActionResult<Category>> Get(Guid id)
     {
         if (UsersController.LoggedInUser == null)
             return Unauthorized("You must be logged in to view categories");
 
-        var category = await _context.Categories.Where(c => c.Id == id && c.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
+        var category = await _context.Categories.Where(category => category.Id == id && category.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
         if (category == null)
             return NotFound("Category not found");
-        return Ok(category);
+        
+        return Ok(category.AsDto());
     }
 
     [HttpPost]
+    [Route("create-category")]
     public async Task<ActionResult<Category>> Post(CreateCategoryDto newcategory)
     {
         if(UsersController.LoggedInUser == null)
@@ -71,11 +87,11 @@ public class CategoriesController : ControllerBase
 
         await _context.Categories.AddAsync(category);
         await _context.SaveChangesAsync();
-        return await Get(category.Id);
+        return await Get(category.Type);
     }
 
     [HttpGet]
-    [Route("get-expenses-of-user-by-category/")]
+    [Route("get-expenses-per-category/")]
     public async Task<ActionResult<GetExpenseDto>> GetCategoryExpensesOfUser(string categoryType)
     {
         if (UsersController.LoggedInUser == null)
@@ -89,5 +105,29 @@ public class CategoriesController : ControllerBase
             return NotFound("No expenses so far");
         return Ok(expenses);
     }
+
+    [HttpPut]
+    [Route("update-category/")]
+    public async Task<ActionResult<Category>> Put(UpdateCategoryDto updatedCategoryDto)
+    {
+        if (UsersController.LoggedInUser == null)
+            return Unauthorized("You must be logged in to update a category");
+
+        if(string.IsNullOrWhiteSpace(updatedCategoryDto.OldType) || string.IsNullOrWhiteSpace(updatedCategoryDto.NewType))
+            return BadRequest("Category must have a type");
+
+        // Check if category with new type already exists
+        var searchCategory = await _context.Categories.Where(c => c.Type == updatedCategoryDto.NewType && c.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
+        if (searchCategory != null)
+            return BadRequest("Category already exists");
+
+        // Check if category with old type exists
+        var category = await _context.Categories.Where(c => c.Type == updatedCategoryDto.OldType && c.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
+        if (category == null)
+            return NotFound("Category not found");
+        category.Type = updatedCategoryDto.NewType;
+        await _context.SaveChangesAsync();
+        return await Get(category.Type);
+    }   
 
 }

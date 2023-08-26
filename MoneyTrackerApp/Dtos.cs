@@ -7,7 +7,7 @@ namespace MoneyTracker.Service.Dtos
 
     public record CreateExpenseDto(double Amount, string CategoryType);
 
-    public record UpdateExpenseDto(double Amount, Guid CategoryId);
+    public record UpdateExpenseDto(double Amount, string CategoryType);
 
     //Users
     public record LoginUserDto(string Email, string Password);
@@ -17,6 +17,10 @@ namespace MoneyTracker.Service.Dtos
     public record CreateUserDto(string Username, string Password, string Email, double Balance);
 
     // Categories
+    public record GetCategoryDto(Guid Id, string Type);
+
     public record CreateCategoryDto(string Type);
+
+    public record UpdateCategoryDto(string OldType, string NewType);
 
 }

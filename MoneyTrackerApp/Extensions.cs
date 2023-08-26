@@ -10,5 +10,10 @@ namespace MoneyTracker.Service.Extensions
             return new GetExpenseDto(expense.Id, expense.Amount, expense.UserID, expense.CategoryID, expense.CreationDate);
         }
 
+        public static GetCategoryDto AsDto(this Category category)
+        {
+            return new GetCategoryDto(category.Id, category.Type);
+        }
+
     }
 }

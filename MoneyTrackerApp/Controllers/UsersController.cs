@@ -32,6 +32,9 @@ public class UsersController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<User>> Post(CreateUserDto newUser)
     {
+        if(LoggedInUser != null)
+            return BadRequest("You are already logged in!");
+
         if (string.IsNullOrWhiteSpace(newUser.Username))
             return BadRequest("User must have a valid username");
         if (string.IsNullOrWhiteSpace(newUser.Password))
@@ -61,6 +64,11 @@ public class UsersController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<string>> login(LoginUserDto user)
     {
+        if (string.IsNullOrWhiteSpace(user.Email))
+            return BadRequest("User must have a valid email");
+        if (string.IsNullOrWhiteSpace(user.Password))
+            return BadRequest("User must have a valid password");
+
         var users = await _context.Users.Where(u => u.Email.Equals(user.Email)).ToListAsync();
         if (users.Count == 0)
             return NotFound("User not found!");
@@ -82,6 +90,9 @@ public class UsersController : ControllerBase
     [HttpPost("logout")]
     public async Task<ActionResult<string>> logout()
     {
+        if(LoggedInUser == null)
+            return BadRequest("No user logged in!");
+
         LoggedInUser = null;
         return Ok("Logged out!");
     }
@@ -130,6 +141,7 @@ public class UsersController : ControllerBase
     }
 
 
+
     [HttpGet]
     public async Task<ActionResult<User>> Get()
     {
@@ -147,23 +159,13 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
-    [HttpGet]
-    [Route("get-expenses/{userid}")]
-    public async Task<ActionResult<Expense>> GetAllExpensesOfUser(Guid userid)
+    [HttpPut]
+    [Route("update-my-info/")]
+    public async Task<ActionResult<UpdateUserDto>> Put(UpdateUserDto updatedUserDto)
     {
-        var user = await _context.Users.FindAsync(userid);
-        if (user == null)
-            return NotFound("User not found!");
-        var expenses = await _context.Expenses.Where(expense => expense.UserID == user.Id).ToListAsync();
-        if (expenses == null)
-            return NotFound("User has no expenses!");
-        return Ok(expenses);
-    }
+        if(LoggedInUser == null)
+            return BadRequest("You must be logged in to update your info!");
 
-
-    [HttpPut("{id}")]
-    public async Task<ActionResult<User>> Put(Guid id, UpdateUserDto updatedUserDto)
-    {
         if (string.IsNullOrWhiteSpace(updatedUserDto.Username))
             return BadRequest("User must have a valid username");
         if (string.IsNullOrWhiteSpace(updatedUserDto.Password))
@@ -182,9 +184,7 @@ public class UsersController : ControllerBase
         if (searchEmail != null)
             return BadRequest("Email already used");
 
-        var user = await _context.FindAsync<User>(id);
-        if (user == null)
-            return NotFound();
+        var user = await _context.FindAsync<User>(LoggedInUser.Id);
 
         CreatePasswordHash(updatedUserDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
@@ -196,7 +196,7 @@ public class UsersController : ControllerBase
 
         _context.Users.Update(user);
         _context.SaveChanges();
-        return await Get(id);
+        return Ok(updatedUserDto);
     }
 
 }

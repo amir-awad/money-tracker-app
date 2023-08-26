@@ -113,17 +113,39 @@ public class ExpensesController : ControllerBase
         return await GetExpense(expense.Id);
     }
 
-    [HttpPut("{expense-id}")]
+    [HttpPut]
     public async Task<ActionResult<GetExpenseDto>> Put(Guid id, UpdateExpenseDto updatedexpense)
     {
+        if(UsersController.LoggedInUser == null)
+            return NotFound("User is not logged in");
+
         var expense = await _context.FindAsync<Expense>(id);
         if (expense == null)
-            return NotFound();
+            return NotFound("Expnese not found");
+
+        if (string.IsNullOrWhiteSpace(updatedexpense.Amount.ToString()))
+            return BadRequest("Expense must have a valid amount");
+        if (updatedexpense.Amount < 0)
+            return BadRequest("Expense must have a valid amount");
+        if (string.IsNullOrWhiteSpace(updatedexpense.CategoryType.ToString()))
+            return BadRequest("Enter a valid category type");
+
+        var expenseCategory = await _context.Categories.Where(category => category.Type == updatedexpense.CategoryType && category.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
+        if (expenseCategory == null)
+            return NotFound("Category is not found");
+
+        double newBalance = UsersController.LoggedInUser.Balance + expense.Amount - updatedexpense.Amount;
+        if (newBalance < 0)
+            return BadRequest("User doesn't have enough balance for this expense");
+
         expense.Amount = updatedexpense.Amount;
-        expense.CategoryID = updatedexpense.CategoryId;
+        expense.CategoryID = expenseCategory.Id;
+
+        UsersController.LoggedInUser.Balance=newBalance;
+        _context.Users.Update(UsersController.LoggedInUser);
         _context.Expenses.Update(expense);
         _context.SaveChanges();
-        return await GetExpense(id);
+        return await GetExpense(expense.Id);
     }
 
     [HttpDelete("expense-id")]

@@ -7,6 +7,6 @@
     "\\MoneyTrackerApp\\Migrations",
     "\\MoneyTrackerApp\\Models"
   ],
-  "SelectedNode": "\\MoneyTrackerApp\\Models\\Category.cs",
+  "SelectedNode": "\\MoneyTrackerApp\\Controllers\\UsersController.cs",
   "PreviewInSolutionExplorer": false
 }
