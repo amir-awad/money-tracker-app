@@ -10,6 +10,8 @@ namespace MoneyTracker.Service.Dtos
     public record UpdateExpenseDto(double Amount, Guid CategoryId);
 
     //Users
+    public record LoginUserDto(string Email, string Password);
+
     public record UpdateUserDto(string Username, string Password, string Email, double Balance);
 
     public record CreateUserDto(string Username, string Password, string Email, double Balance);
