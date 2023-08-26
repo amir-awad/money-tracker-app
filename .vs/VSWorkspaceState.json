@@ -1,14 +1,10 @@
 {
   "ExpandedNodes": [
-<<<<<<< HEAD
     "",
     "\\MoneyTrackerApp",
+    "\\MoneyTrackerApp\\Controllers",
     "\\MoneyTrackerApp\\Models"
   ],
-  "SelectedNode": "\\MoneyTrackerApp\\obj",
-=======
-    ""
-  ],
->>>>>>> 769ad4805baa80089d234396ca5cf66fdcf99b6c
+  "SelectedNode": "\\MoneyTrackerApp\\Controllers\\UsersController.cs",
   "PreviewInSolutionExplorer": false
 }

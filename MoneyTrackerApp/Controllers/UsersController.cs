@@ -19,6 +19,9 @@ public class UsersController : ControllerBase
     private readonly ILogger<UsersController> _logger;
     private readonly ApiDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly SessionController _sessionController = new SessionController();
+
+    public readonly User LoggedInUser;
 
     public UsersController(ILogger<UsersController> logger, ApiDbContext context, IConfiguration configuration)
     {
@@ -141,6 +144,7 @@ public class UsersController : ControllerBase
             if(VerifyPasswordHash(user.Password, u.PasswordHash, u.PasswordSalt))
             {
                 string token = CreateToken(u);
+                LoggedInUser = u;
                 return Ok(token);
             }
         }
@@ -174,7 +178,6 @@ public class UsersController : ControllerBase
             return NotFound();
 
         CreatePasswordHash(updatedUserDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
 
         user.Username = updatedUserDto.Username;
         user.PasswordHash = passwordHash;
