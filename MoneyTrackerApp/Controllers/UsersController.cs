@@ -19,9 +19,8 @@ public class UsersController : ControllerBase
     private readonly ILogger<UsersController> _logger;
     private readonly ApiDbContext _context;
     private readonly IConfiguration _configuration;
-    private readonly SessionController _sessionController = new SessionController();
 
-    public readonly User LoggedInUser;
+    public User LoggedInUser;
 
     public UsersController(ILogger<UsersController> logger, ApiDbContext context, IConfiguration configuration)
     {
