@@ -34,17 +34,16 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get-categorie-by-type/{type}")]
-    public async Task<ActionResult<Category>> Get(string Type)
+    [Route("get-categories-by-type/{type}")]
+    public async Task<ActionResult<Category>> Get(string type)
     {
         if (UsersController.LoggedInUser == null)
             return Unauthorized("You must be logged in to view categories");
-
-        var category = await _context.Categories.Where(category => category.Type == Type && category.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
-        if (category == null)
+        var Findcategory = await _context.Categories.Where(category => category.Type == type && category.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
+        if (Findcategory == null)
             return NotFound("Category not found");
         
-        return Ok(category.AsDto());
+        return Ok(Findcategory.AsDto());
     }
 
     [HttpGet]

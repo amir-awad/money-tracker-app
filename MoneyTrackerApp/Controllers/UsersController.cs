@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using MoneyTracker.Service.Extensions;
 
 namespace MoneyTrackerApp.Controllers;
 
@@ -19,8 +20,7 @@ public class UsersController : ControllerBase
     private readonly ILogger<UsersController> _logger;
     private readonly ApiDbContext _context;
     private readonly IConfiguration _configuration;
-
-    public static User LoggedInUser;
+    public static User? LoggedInUser;
 
     public UsersController(ILogger<UsersController> logger, ApiDbContext context, IConfiguration configuration)
     {
@@ -30,12 +30,10 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<User>> Register(CreateUserDto newUser)
+    public async Task<ActionResult<GetUserDto>> Register(CreateUserDto newUser)
     {
-
-        if(LoggedInUser != null)
+        if (LoggedInUser != null)
             return BadRequest("You are already logged in!");
-
         if (string.IsNullOrWhiteSpace(newUser.Username))
             return BadRequest("User must have a valid username");
         if (string.IsNullOrWhiteSpace(newUser.Password))
@@ -63,37 +61,31 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<string>> Login(LoginUserDto user)
+    public async Task<ActionResult<LoginUserDto>> Login(LoginUserDto LoggedinUser)
     {
-        if (string.IsNullOrWhiteSpace(user.Email))
+        if (string.IsNullOrWhiteSpace(LoggedinUser.Email))
             return BadRequest("User must have a valid email");
-        if (string.IsNullOrWhiteSpace(user.Password))
+        if (string.IsNullOrWhiteSpace(LoggedinUser.Password))
             return BadRequest("User must have a valid password");
 
-        var users = await _context.Users.Where(u => u.Email.Equals(user.Email)).ToListAsync();
-        if (users.Count == 0)
+        var user = await _context.Users.Where(u => u.Email.Equals(LoggedinUser.Email)).FirstOrDefaultAsync();
+        if (user == null)
             return NotFound("User not found!");
 
-        foreach (var u in users)
+        if (VerifyPasswordHash(LoggedinUser.Password, user.PasswordHash, user.PasswordSalt))
         {
-            Console.WriteLine(u.ToString());
-            if (VerifyPasswordHash(user.Password, u.PasswordHash, u.PasswordSalt))
-            {
-                string token = CreateToken(u);
-                LoggedInUser = u;
-                return Ok(token);
-            }
+            string token = CreateToken(user);
+            LoggedInUser = user;
+            return Ok(LoggedinUser);
         }
-
         return BadRequest("Invalid password!");
     }
 
     [HttpPost("logout")]
-    public async Task<ActionResult<string>> Logout()
+    public ActionResult<string> Logout()
     {
-        if(LoggedInUser == null)
+        if (LoggedInUser == null)
             return BadRequest("No user logged in!");
-
         LoggedInUser = null;
         return Ok("Logged out!");
     }
@@ -108,7 +100,6 @@ public class UsersController : ControllerBase
         }
     }
 
-
     private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
     {
         using (var hmac = new HMACSHA512(passwordSalt))
@@ -120,13 +111,11 @@ public class UsersController : ControllerBase
 
     private string CreateToken(User user)
     {
-
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Role, "Admin")
         };
-
         var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
         var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
         var token = new JwtSecurityToken(
@@ -134,37 +123,32 @@ public class UsersController : ControllerBase
             expires: DateTime.UtcNow.AddDays(1),
             signingCredentials: cred
          );
-
-
         var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
         return jwt;
     }
 
-
-
     [HttpGet]
-    public async Task<ActionResult<User>> Get()
+    public async Task<ActionResult<GetUserDto>> Get()
     {
-        var allUsers = await _context.Users.ToListAsync();
+        var allUsers = await _context.Users.Select(user => user.AsDto()).ToListAsync();
         return Ok(allUsers);
     }
 
     [HttpGet]
     [Route("get-user/{id}")]
-    public async Task<ActionResult<User>> Get(Guid id)
+    public async Task<ActionResult<GetUserDto>> Get(Guid id)
     {
         var user = await _context.FindAsync<User>(id);
         if (user == null)
             return NotFound("User not found!");
-        return Ok(user);
+        return Ok(user.AsDto());
     }
 
     [HttpPut]
     [Route("update-my-info/")]
     public async Task<ActionResult<UpdateUserDto>> Update(UpdateUserDto updatedUserDto)
     {
-        if(LoggedInUser == null)
+        if (LoggedInUser == null)
             return BadRequest("You must be logged in to update your info!");
 
         if (string.IsNullOrWhiteSpace(updatedUserDto.Username))
@@ -181,14 +165,15 @@ public class UsersController : ControllerBase
         var emailValidator = new EmailAddressAttribute();
         if (!emailValidator.IsValid(updatedUserDto.Email))
             return BadRequest("Invalid email address!");
-        var searchEmail = await _context.Users.Where(user => user.Email == updatedUserDto.Email).FirstOrDefaultAsync();
+        var searchEmail = await _context.Users.Where(user => user.Email == updatedUserDto.Email && user.Id!=LoggedInUser.Id).FirstOrDefaultAsync();
         if (searchEmail != null)
             return BadRequest("Email already used");
 
         var user = await _context.FindAsync<User>(LoggedInUser.Id);
 
         CreatePasswordHash(updatedUserDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
-
+        if (user == null)
+            return NotFound("User not found!");
         user.Username = updatedUserDto.Username;
         user.PasswordHash = passwordHash;
         user.PasswordSalt = passwordSalt;
