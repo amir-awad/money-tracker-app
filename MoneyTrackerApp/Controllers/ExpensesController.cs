@@ -26,13 +26,13 @@ public class ExpensesController : ControllerBase
     [Route("get-expenses-of-user/")]
     public async Task<ActionResult<GetExpenseDto>> Get()
     {
-        if(UsersController.LoggedInUser == null)
+        if (UsersController.LoggedInUser == null)
             return NotFound("User is not logged in");
 
         Console.WriteLine("User is logged in");
         Console.WriteLine(UsersController.LoggedInUser);
         Guid userId = UsersController.LoggedInUser.Id;
-        Console.Write("User ID: "); 
+        Console.Write("User ID: ");
         Console.Write(userId);
         var allexpenses = await _context.Expenses.Where(expense => expense.UserID == userId).Select(expense => expense.AsDto()).ToListAsync();
         if (allexpenses.Count == 0)
@@ -51,26 +51,23 @@ public class ExpensesController : ControllerBase
     }
 
     // to-do
-    // [HttpGet]
-    // [Route("get-expense-by-date/{Date}")]
-    // public async Task<ActionResult<List<GetExpenseDto>>> GetExpenses(string date)
-    // {
-    // string format = "yyyy-MM-dd";
-    // if (DateTimeOffset.TryParseExact(date, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset result))
-    // {
-    //     var allexpenses = await _context.Expenses
-    //         .Where(expense => expense.CreationDate.Date == result.Date)
-    //         .Select(expense => expense.AsDto())
-    //         .ToListAsync();
-
-    //     return Ok(allexpenses);
-    // }
-
-    // // Console.Write((DateTime)date);
-    // Console.Write(date);
-    // Console.Write(result.Date);
-    // return NotFound("Date conversion failed or invalid format.");
-    // }
+    [HttpGet]
+    [Route("get-expense-by-date/{date}")]
+    public async Task<ActionResult<List<GetExpenseDto>>> GetExpenses(string date)
+    {
+        string format = "yyyy-MM-dd";
+        if (DateTimeOffset.TryParseExact(date, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTimeOffset result))
+        {
+            var allexpenses = await _context.Expenses
+                .Where(expense => expense.CreationDate.Date == result.Date)
+                .Select(expense => expense.AsDto())
+                .ToListAsync();
+            if (allexpenses.Count == 0)
+                return NotFound("No Expenses this day");
+            return Ok(allexpenses);
+        }
+        return NotFound("Date conversion failed or invalid format.");
+    }
 
 
     [HttpPost]
@@ -94,7 +91,7 @@ public class ExpensesController : ControllerBase
         double newBalance = expenseUser.Balance - newExpense.Amount;
         if (newBalance < 0)
             return BadRequest("User doesn't have enough balance for this expense");
-        expenseUser.Balance=newBalance;
+        expenseUser.Balance = newBalance;
         _context.Users.Update(expenseUser);
         _context.SaveChanges();
 
@@ -116,7 +113,7 @@ public class ExpensesController : ControllerBase
     [HttpPut]
     public async Task<ActionResult<GetExpenseDto>> Put(Guid id, UpdateExpenseDto updatedexpense)
     {
-        if(UsersController.LoggedInUser == null)
+        if (UsersController.LoggedInUser == null)
             return NotFound("User is not logged in");
 
         var expense = await _context.FindAsync<Expense>(id);
@@ -141,7 +138,7 @@ public class ExpensesController : ControllerBase
         expense.Amount = updatedexpense.Amount;
         expense.CategoryID = expenseCategory.Id;
 
-        UsersController.LoggedInUser.Balance=newBalance;
+        UsersController.LoggedInUser.Balance = newBalance;
         _context.Users.Update(UsersController.LoggedInUser);
         _context.Expenses.Update(expense);
         _context.SaveChanges();
