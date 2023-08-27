@@ -28,6 +28,19 @@ namespace MoneyTrackerApp.Tests
             context = new ApiDbContext(options);
 
             _controller = new CategoriesController(logger, context);
+
+            // register some users
+            var user1 = new User(Guid.NewGuid(), "user1", new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }, "user1@gmail.com", 5000);
+            var user2 = new User(Guid.NewGuid(), "user2", new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }, "user2@gmail.com", 5000);
+            var user3 = new User(Guid.NewGuid(), "user3", new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }, "user3@gmail.com", 5000);
+
+             context.Users.AddRange(new List<User>
+             {
+                user1,
+                user2,
+                user3
+             });
+
         }
 
         public void RemoveInMemoryDatabase()
@@ -35,26 +48,46 @@ namespace MoneyTrackerApp.Tests
             context.Users.RemoveRange(context.Users); 
             context.Expenses.RemoveRange(context.Expenses);
             context.Categories.RemoveRange(context.Categories);
+            context.SaveChanges();
         }
 
-        /*[Test]
+        [Test]
         public async Task GetAllCategories_ReturnsListOfCategories()
         {
-            //Arrange
             RemoveInMemoryDatabase();
-            Category category1 = new Category(Guid.NewGuid(), "Category1");
-            Category category2 = new Category(Guid.NewGuid(), "Category2");
+            var user1 = new User(Guid.NewGuid(), "user1", new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }, "user1@gmail.com", 5000);
+            context.Users.AddRange(new List<User>
+            {
+                user1
+            });
+
+            UsersController.LoggedInUser = user1;
+
+            Category category1 = new Category()
+            {
+                Id = Guid.NewGuid(),
+                Type = "Category1",
+                UserID = user1.Id
+            };
+            Console.WriteLine("User ID: " + user1.Id);
+            Category category2 = new Category()
+            {
+                Id = Guid.NewGuid(),
+                Type = "Category2",
+                UserID = user1.Id
+            };
             context.Categories.AddRange(new List<Category>
             {
                 category1,
                 category2
             });
+
             context.SaveChanges();
 
-            // Act
-            var result = await _controller.Get();
+            
 
-            // Assert
+            var result = await _controller.Get();
+            
             Assert.IsInstanceOf<ActionResult<Category>>(result); // Check if the result is of type ActionResult<category>
             Assert.IsInstanceOf<OkObjectResult>(result.Result); // Check if the result is of type OkObjectResult
             var okResult = result.Result as OkObjectResult;
@@ -65,103 +98,209 @@ namespace MoneyTrackerApp.Tests
         }
 
         [Test]
-        public async Task GetCategoryById_ReturnsCategory()
+        public async Task GetCategoryByType_ReturnsTheCategory()
         {
-            // Arrange
             RemoveInMemoryDatabase();
-            Guid id = Guid.NewGuid();
+            var user1 = new User(Guid.NewGuid(), "user1", new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }, "user1@gmail.com", 5000);
+            context.Users.AddRange(new List<User>
+            {
+                user1
+            });
+
+            UsersController.LoggedInUser = user1;
+
+            Category category1 = new Category()
+            {
+                Id = Guid.NewGuid(),
+                Type = "Category1",
+                UserID = user1.Id
+            };
             context.Categories.AddRange(new List<Category>
             {
-                new Category(id, "Category3"),
+                category1
             });
+
             context.SaveChanges();
 
-            // Act
-            var result = await _controller.Get(id);
+            var result = await _controller.Get(category1.Type);
 
-            // Assert
             Assert.IsInstanceOf<ActionResult<Category>>(result); // Check if the result is of type ActionResult<category>
             Assert.IsInstanceOf<OkObjectResult>(result.Result); // Check if the result is of type OkObjectResult
             var okResult = result.Result as OkObjectResult;
-            Assert.IsInstanceOf<Category>(okResult.Value);
-            var category = okResult.Value as Category;
-            Assert.AreEqual(id, category.Id);
-            Assert.AreEqual("Category3", category.Type);
+            Assert.IsInstanceOf<GetCategoryDto>(okResult.Value);
+            var category = okResult.Value as GetCategoryDto;
+            Assert.AreEqual(category1.Type, category.Type);
+            
         }
 
         [Test]
-        public async Task PostNewCategory_ReturnsNewCategory()
-        {
-            // Arrange
-            RemoveInMemoryDatabase();
-            var newCategory = new CreateCategoryDto
-            (
-                "NewCategory3"
-            );
-
-            // Act
-            var result = await _controller.Post(newCategory);
-
-            // Assert
-            Assert.IsInstanceOf<ActionResult<Category>>(result); // Check if the result is of type ActionResult<User>
-            Assert.IsInstanceOf<OkObjectResult>(result.Result); // Check if the result is of type OkObjectResult
-            var okResult = result.Result as OkObjectResult;
-            Assert.IsInstanceOf<Category>(okResult.Value);
-            var category = okResult.Value as Category;
-            Assert.AreEqual(newCategory.Type, category.Type);
-        }
-
-        [Test]
-        public async Task GetUserExpenses_ReturnExpenses()
+        public async Task GetCategoryById_ReturnsTheCategory()
         {
             RemoveInMemoryDatabase();
-            var user = new User(Guid.NewGuid(), "User4", "Password4", "user4@gmail.com", 400.0);
+            var user1 = new User(Guid.NewGuid(), "user1", new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }, "user1@gmail.com", 5000);
             context.Users.AddRange(new List<User>
             {
-                user,
+                user1
             });
 
-            var category = new Category(Guid.NewGuid(), "Category1");
-            context.Categories.AddRange(new List<Category>
-            {
-                category,
-            });
+            UsersController.LoggedInUser = user1;
 
-            var expense = new Expense()
+            Category category1 = new Category()
             {
                 Id = Guid.NewGuid(),
-                Amount = 500,
-                CreationDate = DateTime.UtcNow,
-                UserID = user.Id,
-                CategoryID = category.Id,
-                ExpenseUser = await context.Users.FindAsync(user.Id),
-                ExpenseCategory = await context.Categories.FindAsync(category.Id)
+                Type = "Category1",
+                UserID = user1.Id
             };
-
-            context.Expenses.AddRange(new List<Expense>
+            context.Categories.AddRange(new List<Category>
             {
-                expense,
+                category1
             });
 
             context.SaveChanges();
 
+            var result = await _controller.Get(category1.Id);
+            
+            Assert.IsInstanceOf<ActionResult<Category>>(result); // Check if the result is of type ActionResult<category>
+            Assert.IsInstanceOf<OkObjectResult>(result.Result); // Check if the result is of type OkObjectResult
+            var okResult = result.Result as OkObjectResult;
+            Assert.IsInstanceOf<GetCategoryDto>(okResult.Value);
+            var category = okResult.Value as GetCategoryDto;
+            Assert.AreEqual(category1.Type, category.Type);
+        }
 
-            // Act
-            var result = await _controller.GetCategoryExpensesOfUser(user.Id, category.Type);
+        [Test]
+        public async Task CreateCategory_ReturnsTheCreatedCategory()
+        {
+            RemoveInMemoryDatabase();
+            var user1 = new User(Guid.NewGuid(), "user1", new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }, "user1@gmail.com", 5000);
+            context.Users.AddRange(new List<User>
+            {
+                user1
+            });
 
-            // Assert
-            Assert.IsInstanceOf<ActionResult<GetExpenseDto>>(result); // Check if the result is of type ActionResult<Expense>
+            UsersController.LoggedInUser = user1;
+
+            Category category1 = new Category()
+            {
+                Id = Guid.NewGuid(),
+                Type = "Category1",
+                UserID = user1.Id
+            };
+
+            CreateCategoryDto createCategoryDto = new CreateCategoryDto(category1.Type);
+
+            var result = await _controller.Post(createCategoryDto);
+      
+            Assert.IsInstanceOf<ActionResult<Category>>(result); // Check if the result is of type ActionResult<category>
+            Assert.IsInstanceOf<OkObjectResult>(result.Result); // Check if the result is of type CreatedAtActionResult
+            var okResult = result.Result as OkObjectResult;
+            Assert.IsInstanceOf<GetCategoryDto>(okResult.Value);
+            var category = okResult.Value as GetCategoryDto;
+            Assert.AreEqual(category1.Type, category.Type);
+
+        }
+
+        [Test]
+        public async Task GetExpensesPerCategory_ReturnsTheExpenses()
+        {
+            RemoveInMemoryDatabase();
+            var user1 = new User(Guid.NewGuid(), "user1", new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }, "user1@gmail.com", 5000);
+            context.Users.AddRange(new List<User>
+            {
+                user1
+            });
+
+            UsersController.LoggedInUser = user1;
+
+            Category category1 = new Category()
+            {
+                Id = Guid.NewGuid(),
+                Type = "Category1",
+                UserID = user1.Id
+            };
+
+            Expense expense1 = new Expense()
+            {
+                Id = Guid.NewGuid(),
+                Amount = 100,
+                CategoryID = category1.Id,
+                CreationDate = DateTime.Now,
+                UserID = user1.Id,
+                ExpenseUser = user1,
+                ExpenseCategory = category1
+            };
+
+            Expense expense2 = new Expense()
+            {
+                Id = Guid.NewGuid(),
+                Amount = 200,
+                CategoryID = category1.Id,
+                CreationDate = DateTime.Now,
+                UserID = user1.Id,
+                ExpenseUser = user1,
+                ExpenseCategory = category1
+            };
+
+            context.Categories.AddRange(new List<Category>
+            {
+                category1
+            });
+
+            context.Expenses.AddRange(new List<Expense>
+            {
+                expense1,
+                expense2
+            });
+
+            context.SaveChanges();
+
+            var result = await _controller.GetCategoryExpensesOfUser(category1.Type);
+            Assert.NotNull(result);
+            Assert.IsInstanceOf<ActionResult<GetExpenseDto>>(result); // Check if the result is of type ActionResult<List<GetExpenseDto>>
             Assert.IsInstanceOf<OkObjectResult>(result.Result); // Check if the result is of type OkObjectResult
             var okResult = result.Result as OkObjectResult;
             Assert.IsInstanceOf<List<GetExpenseDto>>(okResult.Value);
             var expenses = okResult.Value as List<GetExpenseDto>;
-            Assert.AreEqual(1, expenses.Count);
-            Assert.AreEqual(expense.Id, expenses[0].Id);
-            Assert.AreEqual(expense.Amount, expenses[0].Amount);
-            Assert.AreEqual(expense.UserID, expenses[0].UserId);
-            Assert.AreEqual(expense.CategoryID, expenses[0].CategoryId);
-            Assert.AreEqual(expense.CreationDate, expenses[0].Creationdate);
-        } */
+            Assert.AreEqual(2, expenses.Count);
+        }
+
+        [Test]
+        public async Task UpdateCategory_ReturnsTheUpdatedCategory()
+        {
+            RemoveInMemoryDatabase();
+            var user1 = new User(Guid.NewGuid(), "user1", new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }, "user1@gmail.com", 5000);
+            context.Users.AddRange(new List<User>
+            {
+                user1
+            });
+
+            UsersController.LoggedInUser = user1;
+
+            Category category1 = new Category()
+            {
+                Id = Guid.NewGuid(),
+                Type = "Category1",
+                UserID = user1.Id
+            };
+
+            context.Categories.AddRange(new List<Category>
+            {
+                category1
+            });
+
+            context.SaveChanges();
+
+            UpdateCategoryDto updateCategoryDto = new UpdateCategoryDto(category1.Type,"UpdatedCategory1Type");
+            
+            var result = await _controller.Put(updateCategoryDto);
+            Assert.NotNull(result);
+            Assert.IsInstanceOf<ActionResult<Category>>(result); // Check if the result is of type ActionResult<Category>
+            Assert.IsInstanceOf<OkObjectResult>(result.Result); // Check if the result is of type OkObjectResult
+            var okResult = result.Result as OkObjectResult;
+            Assert.IsInstanceOf<GetCategoryDto>(okResult.Value);
+            var category = okResult.Value as GetCategoryDto;
+            Assert.AreEqual(updateCategoryDto.NewType, category.Type);
+        }
 
     }
 

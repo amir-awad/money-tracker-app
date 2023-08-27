@@ -200,9 +200,4 @@ public class UsersController : ControllerBase
         return Ok(updatedUserDto);
     }
 
-    public void setLoggedInUser(User user)
-    {
-        LoggedInUser = user;
-    }
-
 }

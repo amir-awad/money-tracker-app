@@ -243,7 +243,7 @@ namespace MoneyTrackerApp.Tests
             //Assert.IsInstanceOf<User>(okResult.Value);
             var registeredUser = okResult.Value as User;
 
-            UsersController.LoggedInUser=registeredUser;
+            _controller.setLoggedInUser(registeredUser);
 
             Assert.AreEqual(registeredUser.Username, UsersController.LoggedInUser.Username);
 
@@ -319,7 +319,7 @@ namespace MoneyTrackerApp.Tests
             Console.WriteLine("result");
             var okResult = result.Result as OkObjectResult;
             var registeredUser = okResult.Value as User;
-            UsersController.LoggedInUser=registeredUser;
+            _controller.setLoggedInUser(registeredUser);
             var updatedUser = new UpdateUserDto("updatedUser", "updatedUser11234", "updatedUser@gmail.com", 1550);
             var result2 = await _controller.Update(updatedUser);
             var okResult2 = result2.Result as OkObjectResult;
