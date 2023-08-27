@@ -2,11 +2,10 @@
   "ExpandedNodes": [
     "",
     "\\MoneyTrackerApp",
+    "\\MoneyTrackerApp.Tests",
     "\\MoneyTrackerApp\\Controllers",
-    "\\MoneyTrackerApp\\Data",
-    "\\MoneyTrackerApp\\Migrations",
     "\\MoneyTrackerApp\\Models"
   ],
-  "SelectedNode": "\\MoneyTrackerApp\\Controllers\\UsersController.cs",
+  "SelectedNode": "\\MoneyTrackerApp.Tests\\TestCategoriesController.cs",
   "PreviewInSolutionExplorer": false
 }

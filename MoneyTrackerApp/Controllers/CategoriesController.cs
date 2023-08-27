@@ -34,7 +34,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get-categories-by-type/{type}")]
+    [Route("get-categorie-by-type/{type}")]
     public async Task<ActionResult<Category>> Get(string Type)
     {
         if (UsersController.LoggedInUser == null)
@@ -48,7 +48,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get-categories-by-id/{id}")]
+    [Route("get-categorie-by-id/{id}")]
     public async Task<ActionResult<Category>> Get(Guid id)
     {
         if (UsersController.LoggedInUser == null)
