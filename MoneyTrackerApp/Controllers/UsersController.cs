@@ -135,7 +135,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get-user/{id}")]
+    [Route("{id}")]
     public async Task<ActionResult<GetUserDto>> Get(Guid id)
     {
         var user = await _context.FindAsync<User>(id);
@@ -145,7 +145,6 @@ public class UsersController : ControllerBase
     }
 
     [HttpPut]
-    [Route("update-my-info/")]
     public async Task<ActionResult<UpdateUserDto>> Update(UpdateUserDto updatedUserDto)
     {
         if (LoggedInUser == null)

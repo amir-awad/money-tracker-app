@@ -23,7 +23,6 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get-expenses-of-user/")]
     public async Task<ActionResult<GetExpenseDto>> Get()
     {
         if (UsersController.LoggedInUser == null)
@@ -41,7 +40,7 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get-expense/{id}")]
+    [Route("{id}")]
     public async Task<ActionResult<GetExpenseDto>> GetExpense(Guid id)
     {
         var expense = await _context.FindAsync<Expense>(id);
@@ -50,9 +49,8 @@ public class ExpensesController : ControllerBase
         return Ok(expense.AsDto());
     }
 
-    // to-do
     [HttpGet]
-    [Route("get-expense-by-date/{date}")]
+    [Route("{date?}")]
     public async Task<ActionResult<List<GetExpenseDto>>> GetExpenses(string date)
     {
         string format = "yyyy-MM-dd";
@@ -69,6 +67,21 @@ public class ExpensesController : ControllerBase
         return NotFound("Date conversion failed or invalid format.");
     }
 
+    [HttpGet]
+    [Route("{categoryType?}")]
+    public async Task<ActionResult<GetExpenseDto>> GetCategoryExpensesOfUser(string categoryType)
+    {
+        if (UsersController.LoggedInUser == null)
+            return Unauthorized("You must be logged in to view expenses");
+
+        var category = await _context.Categories.Where(c => c.Type == categoryType && c.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
+        if (category == null)
+            return NotFound();
+        var expenses = await _context.Expenses.Where(expense => expense.CategoryID == category.Id && expense.UserID == UsersController.LoggedInUser.Id).Select(expense => expense.AsDto()).ToListAsync();
+        if (expenses.Count == 0)
+            return NotFound("No expenses so far");
+        return Ok(expenses);
+    }
 
     [HttpPost]
     public async Task<ActionResult<GetExpenseDto>> Post(CreateExpenseDto newExpense)
@@ -145,7 +158,7 @@ public class ExpensesController : ControllerBase
         return await GetExpense(expense.Id);
     }
 
-    [HttpDelete("expense-id")]
+    [HttpDelete("{id}")]
     public async Task<ActionResult<GetExpenseDto>> Delete(Guid id)
     {
         var expense = await _context.FindAsync<Expense>(id);

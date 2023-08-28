@@ -34,7 +34,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get-categories-by-type/{type}")]
+    [Route("{type?}")]
     public async Task<ActionResult<Category>> Get(string type)
     {
         if (UsersController.LoggedInUser == null)
@@ -47,7 +47,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("get-categorie-by-id/{id}")]
+    [Route("{id}")]
     public async Task<ActionResult<Category>> Get(Guid id)
     {
         if (UsersController.LoggedInUser == null)
@@ -61,7 +61,6 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPost]
-    [Route("create-category")]
     public async Task<ActionResult<Category>> Post(CreateCategoryDto newcategory)
     {
         if(UsersController.LoggedInUser == null)
@@ -89,24 +88,7 @@ public class CategoriesController : ControllerBase
         return await Get(category.Type);
     }
 
-    [HttpGet]
-    [Route("get-expenses-per-category/")]
-    public async Task<ActionResult<GetExpenseDto>> GetCategoryExpensesOfUser(string categoryType)
-    {
-        if (UsersController.LoggedInUser == null)
-            return Unauthorized("You must be logged in to view expenses");
-
-        var category = await _context.Categories.Where(c => c.Type == categoryType && c.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
-        if (category == null)
-            return NotFound();
-        var expenses = await _context.Expenses.Where(expense => expense.CategoryID == category.Id && expense.UserID == UsersController.LoggedInUser.Id).Select(expense => expense.AsDto()).ToListAsync();
-        if (expenses.Count == 0)
-            return NotFound("No expenses so far");
-        return Ok(expenses);
-    }
-
     [HttpPut]
-    [Route("update-category/")]
     public async Task<ActionResult<Category>> Put(UpdateCategoryDto updatedCategoryDto)
     {
         if (UsersController.LoggedInUser == null)
