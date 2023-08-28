@@ -23,7 +23,6 @@ public class CategoriesController : ControllerBase
         _context = context;
     }
 
-    [HttpGet]
     public async Task<ActionResult<Category>> Get()
     {
         if (UsersController.LoggedInUser == null)
@@ -34,9 +33,12 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("{type?}")]
-    public async Task<ActionResult<Category>> Get(string type)
+    [Route("/Categories")]
+    public async Task<ActionResult<Category>> Get([FromQuery]string type)
     {
+        if(type is null)
+            return await Get();
+            
         if (UsersController.LoggedInUser == null)
             return Unauthorized("You must be logged in to view categories");
         var Findcategory = await _context.Categories.Where(category => category.Type == type && category.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
@@ -46,9 +48,9 @@ public class CategoriesController : ControllerBase
         return Ok(Findcategory.AsDto());
     }
 
-    [HttpGet]
-    [Route("{id}")]
-    public async Task<ActionResult<Category>> Get(Guid id)
+    [HttpGet("/Categories/{id}")]
+
+    public async Task<ActionResult<Category>> Get([FromRoute]Guid id)
     {
         if (UsersController.LoggedInUser == null)
             return Unauthorized("You must be logged in to view categories");

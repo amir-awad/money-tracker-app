@@ -106,6 +106,10 @@ public class ExpensesController : ControllerBase
             return BadRequest("User doesn't have enough balance for this expense");
         expenseUser.Balance = newBalance;
         _context.Users.Update(expenseUser);
+
+        expenseCategory.TotalAmount += newExpense.Amount;
+        _context.Categories.Update(expenseCategory);
+
         _context.SaveChanges();
 
         var expense = new Expense()
@@ -148,7 +152,10 @@ public class ExpensesController : ControllerBase
         if (newBalance < 0)
             return BadRequest("User doesn't have enough balance for this expense");
 
-        expense.Amount = updatedexpense.Amount;
+        if(expense.Amount != updatedexpense.Amount) {
+            expenseCategory.TotalAmount = expenseCategory.TotalAmount - expense.Amount + updatedexpense.Amount;
+            expense.Amount = updatedexpense.Amount;
+        }
         expense.CategoryID = expenseCategory.Id;
 
         UsersController.LoggedInUser.Balance = newBalance;
@@ -160,10 +167,15 @@ public class ExpensesController : ControllerBase
 
     [HttpDelete("{id}")]
     public async Task<ActionResult<GetExpenseDto>> Delete(Guid id)
-    {
+    { 
         var expense = await _context.FindAsync<Expense>(id);
-        if (expense == null)
+        var expenseCategory = await _context.Categories.Where(category => category.Id == expense.CategoryID && category.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
+        
+        if (expense == null || expenseCategory == null)
             return NotFound();
+
+        expenseCategory.TotalAmount -= expense.Amount;
+        _context.Categories.Update(expenseCategory);
         _context.Remove(expense);
         _context.SaveChanges();
         return Ok(expense.AsDto());

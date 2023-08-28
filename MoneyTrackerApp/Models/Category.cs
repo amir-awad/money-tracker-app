@@ -8,6 +8,8 @@ public class Category
 
     public required string Type { get; set; }
 
+    public double TotalAmount { get; set; }
+
     public required Guid UserID { get; set; }
 
 }

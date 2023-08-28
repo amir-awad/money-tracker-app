@@ -151,6 +151,71 @@ namespace MoneyTrackerApp.Tests
         }
 
         [Test]
+        public async Task GetExpensesPerCategory_ReturnsTheExpenses()
+        {
+            RemoveInMemoryDatabase();
+            var user1 = new User(Guid.NewGuid(), "user1", new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }, "user1@gmail.com", 5000);
+            context.Users.AddRange(new List<User>
+            {
+                user1
+            });
+
+            UsersController.LoggedInUser = user1;
+
+            Category category1 = new Category()
+            {
+                Id = Guid.NewGuid(),
+                Type = "Category1",
+                UserID = user1.Id
+            };
+
+            Expense expense1 = new Expense()
+            {
+                Id = Guid.NewGuid(),
+                Amount = 100,
+                CategoryID = category1.Id,
+                CreationDate = DateTime.Now,
+                UserID = user1.Id,
+                ExpenseUser = user1,
+                ExpenseCategory = category1
+            };
+
+            Expense expense2 = new Expense()
+            {
+                Id = Guid.NewGuid(),
+                Amount = 200,
+                CategoryID = category1.Id,
+                CreationDate = DateTime.Now,
+                UserID = user1.Id,
+                ExpenseUser = user1,
+                ExpenseCategory = category1
+            };
+
+            context.Categories.AddRange(new List<Category>
+            {
+                category1
+            });
+
+            context.Expenses.AddRange(new List<Expense>
+            {
+                expense1,
+                expense2
+            });
+
+            context.SaveChanges();
+
+            var result = await _controller.GetCategoryExpensesOfUser(category1.Type);
+            Assert.NotNull(result);
+            Assert.IsInstanceOf<ActionResult<GetExpenseDto>>(result); // Check if the result is of type ActionResult<List<GetExpenseDto>>
+            Assert.IsInstanceOf<OkObjectResult>(result.Result); // Check if the result is of type OkObjectResult
+            var okResult = result.Result as OkObjectResult;
+            Assert.IsInstanceOf<List<GetExpenseDto>>(okResult.Value);
+            var expenses = okResult.Value as List<GetExpenseDto>;
+            Assert.AreEqual(2, expenses.Count);
+        }
+
+
+        [Test]
         public async Task PostNewExpense_ReturnsNewExpense()
         {
             // Arrange
