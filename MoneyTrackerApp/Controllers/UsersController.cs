@@ -28,6 +28,42 @@ public class UsersController : ControllerBase
         _context = context;
         _configuration = configuration;
     }
+    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+    {
+        using (var hmac = new HMACSHA512())
+        {
+            passwordSalt = hmac.Key;
+            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+
+        }
+    }
+
+    private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+    {
+        using (var hmac = new HMACSHA512(passwordSalt))
+        {
+            var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+            return computedHash.SequenceEqual(passwordHash);
+        }
+    }
+
+    private string CreateToken(User user)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Role, "Admin")
+        };
+        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
+        var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+        var token = new JwtSecurityToken(
+            claims: claims,
+            expires: DateTime.UtcNow.AddDays(1),
+            signingCredentials: cred
+         );
+        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+        return jwt;
+    }
 
     [HttpPost("register")]
     public async Task<ActionResult<GetUserDto>> Register(CreateUserDto newUser)
@@ -90,43 +126,6 @@ public class UsersController : ControllerBase
         return Ok("Logged out!");
     }
 
-    private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-    {
-        using (var hmac = new HMACSHA512())
-        {
-            passwordSalt = hmac.Key;
-            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-
-        }
-    }
-
-    private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-    {
-        using (var hmac = new HMACSHA512(passwordSalt))
-        {
-            var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            return computedHash.SequenceEqual(passwordHash);
-        }
-    }
-
-    private string CreateToken(User user)
-    {
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Role, "Admin")
-        };
-        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
-        var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-        var token = new JwtSecurityToken(
-            claims: claims,
-            expires: DateTime.UtcNow.AddDays(1),
-            signingCredentials: cred
-         );
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-        return jwt;
-    }
-
     [HttpGet]
     public async Task<ActionResult<GetUserDto>> Get()
     {
@@ -134,8 +133,7 @@ public class UsersController : ControllerBase
         return Ok(allUsers);
     }
 
-    [HttpGet]
-    [Route("{id}")]
+    [HttpGet("{id}")]
     public async Task<ActionResult<GetUserDto>> Get(Guid id)
     {
         var user = await _context.FindAsync<User>(id);
@@ -164,7 +162,7 @@ public class UsersController : ControllerBase
         var emailValidator = new EmailAddressAttribute();
         if (!emailValidator.IsValid(updatedUserDto.Email))
             return BadRequest("Invalid email address!");
-        var searchEmail = await _context.Users.Where(user => user.Email == updatedUserDto.Email && user.Id!=LoggedInUser.Id).FirstOrDefaultAsync();
+        var searchEmail = await _context.Users.Where(user => user.Email == updatedUserDto.Email && user.Id != LoggedInUser.Id).FirstOrDefaultAsync();
         if (searchEmail != null)
             return BadRequest("Email already used");
 

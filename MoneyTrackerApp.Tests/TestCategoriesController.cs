@@ -84,9 +84,7 @@ namespace MoneyTrackerApp.Tests
 
             context.SaveChanges();
 
-            
-
-            var result = await _controller.Get();
+            var result = await _controller.Get(null);
             
             Assert.IsInstanceOf<ActionResult<Category>>(result); // Check if the result is of type ActionResult<category>
             Assert.IsInstanceOf<OkObjectResult>(result.Result); // Check if the result is of type OkObjectResult

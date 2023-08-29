@@ -39,8 +39,7 @@ public class ExpensesController : ControllerBase
         return Ok(allexpenses);
     }
 
-    [HttpGet]
-    [Route("{id}")]
+    [HttpGet("{id}")]
     public async Task<ActionResult<GetExpenseDto>> GetExpense(Guid id)
     {
         var expense = await _context.FindAsync<Expense>(id);
@@ -49,8 +48,7 @@ public class ExpensesController : ControllerBase
         return Ok(expense.AsDto());
     }
 
-    [HttpGet]
-    [Route("{date?}")]
+    [HttpGet("{date?}")]
     public async Task<ActionResult<List<GetExpenseDto>>> GetExpenses(string date)
     {
         string format = "yyyy-MM-dd";
@@ -67,8 +65,7 @@ public class ExpensesController : ControllerBase
         return NotFound("Date conversion failed or invalid format.");
     }
 
-    [HttpGet]
-    [Route("{categoryType?}")]
+    [HttpGet("{categoryType?}")]
     public async Task<ActionResult<GetExpenseDto>> GetCategoryExpensesOfUser(string categoryType)
     {
         if (UsersController.LoggedInUser == null)
@@ -169,9 +166,10 @@ public class ExpensesController : ControllerBase
     public async Task<ActionResult<GetExpenseDto>> Delete(Guid id)
     { 
         var expense = await _context.FindAsync<Expense>(id);
+         if (expense == null)
+            return NotFound();
         var expenseCategory = await _context.Categories.Where(category => category.Id == expense.CategoryID && category.UserID == UsersController.LoggedInUser.Id).FirstOrDefaultAsync();
-        
-        if (expense == null || expenseCategory == null)
+        if (expenseCategory == null)
             return NotFound();
 
         expenseCategory.TotalAmount -= expense.Amount;
